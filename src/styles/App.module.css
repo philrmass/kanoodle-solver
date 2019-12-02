@@ -1,0 +1,10 @@
+.page {
+  height: 100vh;
+}
+
+.main {
+  background: #f4f4f4;
+  color: #282828;
+  padding: 16px;
+  height: 75%;
+}

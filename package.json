@@ -1,0 +1,40 @@
+{
+  "name": "kanoodle-solver",
+  "version": "1.0.0",
+  "homepage": "https://philrmass.github.io/kanoodle-solver",
+  "description": "Solves the puzzle game Kanoodle",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server --mode development",
+    "build": "webpack --mode production",
+    "test": "mocha",
+    "lint": "eslint src/** src/**/**",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  },
+  "author": "Phil Mass",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.6.4",
+    "@babel/preset-env": "^7.6.3",
+    "@babel/preset-react": "^7.6.3",
+    "babel-eslint": "^10.0.3",
+    "babel-loader": "^8.0.6",
+    "css-loader": "^3.2.0",
+    "eslint": "^6.5.1",
+    "eslint-loader": "^3.0.2",
+    "eslint-plugin-react": "^7.16.0",
+    "file-loader": "^4.2.0",
+    "gh-pages": "^2.1.1",
+    "react-hot-loader": "^4.12.15",
+    "style-loader": "^1.0.0",
+    "url-loader": "^2.2.0",
+    "webpack": "^4.41.1",
+    "webpack-cli": "^3.3.9",
+    "webpack-dev-server": "^3.8.2"
+  },
+  "dependencies": {
+    "react": "^16.10.2",
+    "react-dom": "^16.10.2"
+  }
+}

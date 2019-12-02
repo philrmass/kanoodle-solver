@@ -1,0 +1,13 @@
+# npm
+node_modules/
+dist/*
+!dist/index.html
+!dist/manifest.json
+!dist/logo512.png
+!dist/logo192.png
+!dist/logoApple.png
+!dist/favicon.ico
+!dist/serviceWorker.js
+
+# vim
+*.swp
