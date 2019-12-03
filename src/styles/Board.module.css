@@ -1,0 +1,15 @@
+.board {
+  --height: calc(100% * 5 / 11);
+  position: relative;
+  box-sizing: border-box;
+  padding-top: var(--height);
+  border: 1px solid var(--border);
+  background: var(--bg-mid);
+  color: var(--text-light);
+}
+
+.spot {
+  position: absolute;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+}
