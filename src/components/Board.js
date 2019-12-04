@@ -1,8 +1,17 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import styles from '../styles/Board.module.css';
 import pieces from '../data/pieces.json';
 
-function Board() {
+function Board({ board }) {
+  function getColor(piece) {
+    if (piece < 0) {
+      return 'transparent';
+    }
+    const color = pieces[piece].color;
+    return `#${color}`;
+  }
+
   function buildSpots() {
     const rows = 5;
     const cols = 11;
@@ -19,13 +28,12 @@ function Board() {
       for (let col = 0; col < cols; col++) {
         const key = `spot${row}-${col}`;
         const index = row * cols + col;
-        //const piece = board[index].piece;
-        const piece = Math.floor(index / (55 / 12));
-        const color = pieces[piece].color;
+        const piece = board[index];
+        const color = getColor(piece);
         const left = col * spaceWidth + spotOffsetX;
         const top = row * spaceHeight + spotOffsetY;
         const spotStyle = {
-          background: `#${color}`,
+          background: `${color}`,
           left: `${left}%`,
           top: `${top}%`,
           width: `${spotWidth}%`,
@@ -39,12 +47,15 @@ function Board() {
     return spots;
   }
 
-  //??? add board prop, pass to buildSpots
   return (
     <div className={styles.board}>
       {buildSpots()}
     </div>
   );
 }
+
+Board.propTypes = {
+  board: PropTypes.arrayOf(PropTypes.number).isRequired,
+};
 
 export default Board;
