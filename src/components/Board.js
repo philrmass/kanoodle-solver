@@ -5,7 +5,7 @@ import pieces from '../data/pieces.json';
 
 function Board({ board }) {
   function getColor(piece) {
-    if (piece < 0) {
+    if (piece < 0 || piece >= pieces.length) {
       return 'transparent';
     }
     const color = pieces[piece].color;
