@@ -1,61 +1,61 @@
 [
   {
-    "piece": 0,
+    "index": 0,
     "code": "L",
     "color": "cfc4b2"
   },
   {
-    "piece": 1,
+    "index": 1,
     "code": "I",
     "color": "ffd603"
   },
   {
-    "piece": 2,
+    "index": 2,
     "code": "B",
     "color": "f63202"
   },
   {
-    "piece": 3,
+    "index": 3,
     "code": "H",
     "color": "f35e95"
   },
   {
-    "piece": 4,
+    "index": 4,
     "code": "G",
     "color": "b6d8e5"
   },
   {
-    "piece": 5,
+    "index": 5,
     "code": "E",
     "color": "009b59"
   },
   {
-    "piece": 6,
+    "index": 6,
     "code": "D",
     "color": "efc19f"
   },
   {
-    "piece": 7,
+    "index": 7,
     "code": "C",
     "color": "0149c2"
   },
   {
-    "piece": 8,
+    "index": 8,
     "code": "K",
     "color": "abe64c"
   },
   {
-    "piece": 9,
+    "index": 9,
     "code": "A",
     "color": "ff8a00"
   },
   {
-    "piece": 10,
+    "index": 10,
     "code": "J",
     "color": "925abb"
   },
   {
-    "piece": 11,
+    "index": 11,
     "code": "F",
     "color": "ffffe8"
   }

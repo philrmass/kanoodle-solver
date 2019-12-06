@@ -5,4 +5,10 @@
 
 .main {
   padding: 16px;
+  background: var(--bg-dark);
+}
+
+.buttons {
+  display: flex;
+  padding-bottom: 16px;
 }

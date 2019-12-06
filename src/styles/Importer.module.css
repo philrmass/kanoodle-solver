@@ -1,3 +1,25 @@
-.main {
-  color: var(--text-light);
+.topButtons {
+  display: flex;
+  margin-bottom: 16px;
+}
+
+.dropZone {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  margin-left: 16px;
+  background: var(--bg-mid);
+}
+
+.canvasWrap {
+  display: inline-block;
+  font-size: 0;
+  overflow: hidden;
+}
+
+.canvas {
+  background: var(--bg-mid);
+}
+
+.bottomButtons {
+  margin-top: 16px;
 }
