@@ -4,8 +4,7 @@ import { hexToColor, rgbToColor } from '../utilities/color';
 import pieces from '../data/pieces.json';
 import styles from '../styles/Importer.module.css';
 
-//??? add offset and scale commands using the arrow keys
-//??? detect 9+ pixels around the click to determine color, reject outliers
+//??? detect 9+ pixels around the corners to determine color, reject outliers
 //??? look up color at other 51 locations, create board and display it
 //??? add level number, show that level before clicks, ask to save
 //??? add instructions
@@ -13,31 +12,31 @@ import styles from '../styles/Importer.module.css';
 function Importer({ close }) {
   const maxSize = 500;
   const canvas = useRef(null);
+  const [image, setImage] = useState(null);
+  const [imageWidth, setImageWidth] = useState(0);
+  const [imageHeight, setImageHeight] = useState(0);
   const [scale, setScale] = useState(1.0);
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
+  const [offsetX, setOffsetX] = useState(0);
+  const [offsetY, setOffsetY] = useState(0);
   const [pixels, setPixels] = useState([]);
   const [colorPieces] = useState(pieces.map((p) => ({ ...p, color: hexToColor(p.color) })));
   const [hasDrop, setHasDrop] = useState(false);
   const [corners, setCorners] = useState([[-1, -1], [-1, -1], [-1, -1], [-1, -1]]);
   const [cornerIndex, setCornerIndex] = useState(0);
-  const [img, setImg] = useState(null);
 
   useEffect(() => {
-    const ctx = canvas.current.getContext('2d');
-    ctx.fillStyle = '#00000080';
-    ctx.strokeStyle = '#ffff00';
-    if (img) {
-      const w = scale * width;
-      const h = scale * height;
-      ctx.drawImage(img, 0, 0, w, h);
-    }
+    drawImage();
 
-    const size = 6;
+    const ctx = canvas.current.getContext('2d');
+    ctx.strokeStyle = '#ffff00';
+    ctx.fillStyle = '#00000080';
+    ctx.lineWidth = 2;
+
+    const size = 8;
     let count = 0;
     for (const corner of corners) {
-      const x = scale * corner[0];
-      const y = scale * corner[1];
+      const x = offsetX + scale * corner[0];
+      const y = offsetY + scale * corner[1];
 
       if (x >= 0 && y >= 0) {
         ctx.fillRect(x, y, size, size);
@@ -49,7 +48,71 @@ function Importer({ close }) {
     if (count === 4) {
       console.log('FILL the board');
     }
-  }, [corners]);
+  }, [corners, scale, offsetX, offsetY]);
+
+  function drawImage() {
+    if (image) {
+      const ctx = canvas.current.getContext('2d');
+      const dw = scale * imageWidth;
+      const dh = scale * imageHeight;
+      ctx.fillStyle = '#606060';
+      ctx.fillRect(0, 0, canvas.current.width, canvas.current.height); 
+      ctx.drawImage(image, offsetX, offsetY, dw, dh);
+    }
+  }
+
+  function handleKeyDown(e) {
+    switch (e.keyCode) {
+      case 32:
+        setScale(canvas.current.width / imageWidth);
+        setOffsetX(0);
+        setOffsetY(0);
+        break;
+      case 37:
+        const dw = scale * imageWidth;
+        const diff = 
+        setOffsetX((offset) => offset - 10);
+        break;
+      case 38:
+        setOffsetY((offset) => offset - 10);
+        break;
+      case 39:
+        setOffsetX((offset) => offset + 10);
+        break;
+      case 40:
+        setOffsetY((offset) => offset + 10);
+        break;
+      case 187:
+        let dw0 = scale * imageWidth;
+        let dh0 = scale * imageHeight;
+        let value = 1.05 * scale;
+        let dw1 = value * imageWidth;
+        let dh1 = value * imageHeight;
+        let dx = 0.5 * (dw1 - dw0);
+        let dy = 0.5 * (dh1 - dh0);
+        setScale(value);
+        setOffsetX((offset) => offset - dx);
+        setOffsetY((offset) => offset - dy);
+        break;
+      case 189:
+        dw0 = scale * imageWidth;
+        dh0 = scale * imageHeight;
+        value = 0.95 * scale;
+        if (value * imageWidth < canvas.current.width) {
+          value = canvas.current.width / imageWidth;
+        }
+        dw1 = value * imageWidth;
+        dh1 = value * imageHeight;
+        dx = 0.5 * (dw1 - dw0);
+        dy = 0.5 * (dh1 - dh0);
+        setScale(value);
+        setOffsetX((offset) => offset - dx);
+        setOffsetY((offset) => offset - dy);
+        break;
+      default:
+        break;
+    }
+  }
 
   function doNothing(e) {
     e.stopPropagation();
@@ -68,8 +131,8 @@ function Importer({ close }) {
     const rect = e.currentTarget.getBoundingClientRect();
     const canvasX = event.clientX - rect.left;
     const canvasY = event.clientY - rect.top;
-    const x = Math.floor(canvasX / scale);
-    const y = Math.floor(canvasY / scale);
+    const x = Math.floor((canvasX - offsetX) / scale);
+    const y = Math.floor((canvasY - offsetY) / scale);
 
     setCorners((c) => [...c.slice(0, cornerIndex), [x, y], ...c.slice(cornerIndex + 1)]);
     setCornerIndex((index) => (index < 3) ? index + 1 : 0);
@@ -83,7 +146,7 @@ function Importer({ close }) {
     const perColor = 4;
     const x = offsets[0];
     const y = offsets[1];
-    const index = perColor * (y * width + x);
+    const index = perColor * (y * imageWidth + x);
     let red = 0;
     let green = 0;
     let blue = 0;
@@ -133,72 +196,80 @@ function Importer({ close }) {
     image.src = loadedUrl;
   }
 
-  function processImage(image) {
-    const [imageScale, width, height] = calculateImageScale(image, maxSize);
+  function processImage(img) {
+    const [imageScale, width, height] = calculateImageScale(img, maxSize);
+    setImage(img);
+    setImageWidth(img.width);
+    setImageHeight(img.height);
+    setPixels(getImagePixels(img));
     setScale(imageScale);
+    setCorners([[-1, -1], [-1, -1], [-1, -1], [-1, -1]]);
 
     const ctx = canvas.current.getContext('2d');
     canvas.current.width = width;
     canvas.current.height = height;
-    ctx.drawImage(image, 0, 0, width, height);
-
-    const fullCanvas = document.createElement('canvas');
-    fullCanvas.width = image.width;
-    fullCanvas.height = image.height;
-
-    const fullCtx = fullCanvas.getContext('2d');
-    fullCtx.drawImage(image, 0, 0);
-    const imageData = fullCtx.getImageData(0, 0, fullCanvas.width, fullCanvas.height);
-    setPixels(imageData.data);
-    setWidth(fullCanvas.width);
-    setHeight(fullCanvas.height);
-    setImg(image);
-    setCorners([[-1, -1], [-1, -1], [-1, -1], [-1, -1]]);
+    ctx.drawImage(img, 0, 0, width, height);
   }
 
-  function calculateImageScale(image, maxSize) {
+  function getImagePixels(img) {
+    const imageCanvas = document.createElement('canvas');
+    const imageCtx = imageCanvas.getContext('2d');
+    imageCanvas.width = img.width;
+    imageCanvas.height = img.height;
+    imageCtx.drawImage(img, 0, 0);
+
+    const imageData = imageCtx.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
+    return imageData.data;
+  }
+
+  function calculateImageScale(img, maxSize) {
     let scale;
-    if (image.width > image.height) {
-      scale = maxSize / image.width;
+    if (img.width > img.height) {
+      scale = maxSize / img.width;
     } else {
-      scale = maxSize / image.height;
+      scale = maxSize / img.height;
     }
 
-    const width = Math.round(scale * image.width);
-    const height = Math.round(scale * image.height);
+    const width = Math.round(scale * img.width);
+    const height = Math.round(scale * img.height);
 
     return [scale, width, height];
   }
 
-  const dropClasses = `${styles.dropZone} ${hasDrop ? 'active' : ''}`;
+  const dropClasses = `${styles.dropMessage} ${hasDrop ? 'active' : ''}`;
 
   return (
     <Fragment>
-      <div className={styles.topButtons}>
-        <button onClick={close}>Close</button>
+      <div
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+      >
+        <div className={styles.topButtons}>
+          <button onClick={close}>Close</button>
+          <div
+            className={dropClasses}
+          >
+            Drag a Kanoodle image below to begin
+          </div>
+        </div>
         <div
-          className={dropClasses}
+          className={styles.canvasWrap}
+          onClick={handleCanvasClick}
           onDragEnter={() => setHasDrop(true)}
           onDragLeave={() => setHasDrop(false)}
           onDragOver={doNothing}
           onDrop={handleFileDrop}
         >
-          Drag a Kanoodle image here to begin
+          <canvas
+            ref={canvas}
+            className={styles.canvas}
+            width={300}
+            height={200}
+          />
         </div>
-      </div>
-      <div
-        className={styles.canvasWrap}
-        onClick={handleCanvasClick}
-      >
-        <canvas
-          ref={canvas}
-          className={styles.canvas}
-          width={300}
-          height={200}
-        />
-      </div>
-      <div className={styles.bottomButtons}>
-        <button onClick={close}>Close</button>
+        <div className={styles.bottomButtons}>
+          <button onClick={close}>Close</button>
+        </div>
       </div>
     </Fragment>
   );

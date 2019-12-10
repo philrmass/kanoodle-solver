@@ -3,11 +3,9 @@
   margin-bottom: 16px;
 }
 
-.dropZone {
+.dropMessage {
   padding: 4px 8px;
-  border: 1px solid var(--border);
   margin-left: 16px;
-  background: var(--bg-mid);
 }
 
 .canvasWrap {

@@ -29,7 +29,7 @@
     "dot-notation": "error",
     "eqeqeq": [ "error", "smart" ],
     "func-call-spacing": "warn",
-    "indent": [ "error", 2 ],
+    "indent": [ "error", 2, { "SwitchCase" 1 } ],
     "jsx-quotes": [ "warn", "prefer-single" ],
     "key-spacing": "warn",
     "keyword-spacing": "warn",
