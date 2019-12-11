@@ -1,0 +1,12 @@
+.colorGrid {
+  display: grid;
+}
+
+.color {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+  font-size: 12px;
+  overflow: hidden;
+}

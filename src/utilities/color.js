@@ -32,7 +32,7 @@ function hexToRgb(hex) {
   };
 }
 
-function rgbToHex(rgb) {
+export function rgbToHex(rgb) {
   const r = ('0' + rgb.red.toString(16)).slice(-2);
   const g = ('0' + rgb.green.toString(16)).slice(-2);
   const b = ('0' + rgb.blue.toString(16)).slice(-2);

@@ -2,6 +2,7 @@ import React, { Fragment, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { hexToColor, rgbToColor } from '../utilities/color';
 import pieces from '../data/pieces.json';
+import ColorsDisplay from './ColorsDisplay';
 import styles from '../styles/Importer.module.css';
 
 //??? detect 9+ pixels around the corners to determine color, reject outliers
@@ -23,6 +24,7 @@ function Importer({ close }) {
   const [hasDrop, setHasDrop] = useState(false);
   const [corners, setCorners] = useState([[-1, -1], [-1, -1], [-1, -1], [-1, -1]]);
   const [cornerIndex, setCornerIndex] = useState(0);
+  const [colors, setColors] = useState([]);
 
   useEffect(() => {
     drawImage();
@@ -46,7 +48,11 @@ function Importer({ close }) {
     }
 
     if (count === 4) {
-      console.log('FILL the board');
+      const corner = corners[0];
+      const color = getImageAverageColor(corner[0], corner[1]);
+      //??? color lookup
+      //const color = getImageColor([x, y]);
+      //const piece = matchPiece(color);
     }
   }, [corners, scale, offsetX, offsetY]);
 
@@ -137,15 +143,23 @@ function Importer({ close }) {
     setCorners((c) => [...c.slice(0, cornerIndex), [x, y], ...c.slice(cornerIndex + 1)]);
     setCornerIndex((index) => (index < 3) ? index + 1 : 0);
 
-    //??? color lookup
-    //const color = getImageColor([x, y]);
-    //const piece = matchPiece(color);
+    setColors(getImageAverageColor(x, y));
   }
 
-  function getImageColor(offsets) {
+  function getImageAverageColor(x, y) {
+    const size = 1;
+    const colors = [];
+
+    for (let iy = y - size; iy <= y + size; iy++) {
+      for (let ix = x - size; ix <= x + size; ix++) {
+        colors.push(getImageColor(ix, iy));
+      } }
+
+    return colors;
+  }
+
+  function getImageColor(x, y) {
     const perColor = 4;
-    const x = offsets[0];
-    const y = offsets[1];
     const index = perColor * (y * imageWidth + x);
     let red = 0;
     let green = 0;
@@ -267,9 +281,12 @@ function Importer({ close }) {
             height={200}
           />
         </div>
+        {/*
         <div className={styles.bottomButtons}>
           <button onClick={close}>Close</button>
         </div>
+        */}
+        <ColorsDisplay colors={colors} />
       </div>
     </Fragment>
   );
