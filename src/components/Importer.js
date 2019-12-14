@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { hexToColor, rgbToColor } from '../utilities/color';
+import { calcAverage, calcHueDiff, hexToColor, hslToColor, rgbToColor } from '../utilities/color';
 import pieces from '../data/pieces.json';
 import ColorsDisplay from './ColorsDisplay';
 import styles from '../styles/Importer.module.css';
@@ -20,11 +20,12 @@ function Importer({ close }) {
   const [offsetX, setOffsetX] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
   const [pixels, setPixels] = useState([]);
-  const [colorPieces] = useState(pieces.map((p) => ({ ...p, color: hexToColor(p.color) })));
+  const [colorPieces] = useState(pieces.map((p) => ({ ...p, matchColor: hexToColor(p.matchColor) })));
   const [hasDrop, setHasDrop] = useState(false);
   const [corners, setCorners] = useState([[-1, -1], [-1, -1], [-1, -1], [-1, -1]]);
   const [cornerIndex, setCornerIndex] = useState(0);
   const [colors, setColors] = useState([]);
+  const [colorAverage, setColorAverage] = useState(hexToColor('000000'));
 
   useEffect(() => {
     drawImage();
@@ -49,7 +50,7 @@ function Importer({ close }) {
 
     if (count === 4) {
       const corner = corners[0];
-      const color = getImageAverageColor(corner[0], corner[1]);
+      const color = getImageColors(corner[0], corner[1]);
       //??? color lookup
       //const color = getImageColor([x, y]);
       //const piece = matchPiece(color);
@@ -143,11 +144,17 @@ function Importer({ close }) {
     setCorners((c) => [...c.slice(0, cornerIndex), [x, y], ...c.slice(cornerIndex + 1)]);
     setCornerIndex((index) => (index < 3) ? index + 1 : 0);
 
-    setColors(getImageAverageColor(x, y));
+    const cols = getImageColors(x, y);
+    const ave = calcAverage(cols.filter((col) => col.light >= 30));
+    const piece = matchPiece(ave);
+    console.log('AVE', ave.hue.toFixed(1), ave.sat.toFixed(1), ave.light.toFixed(1));
+    console.log(' PIECE', piece.index, ' ', piece.code);
+    setColors(cols);
+    setColorAverage(ave);
   }
 
-  function getImageAverageColor(x, y) {
-    const size = 1;
+  function getImageColors(x, y) {
+    const size = 5;
     const colors = [];
 
     for (let iy = y - size; iy <= y + size; iy++) {
@@ -174,14 +181,14 @@ function Importer({ close }) {
   }
 
   function matchPiece(color) {
+    const hueWeight = 1.5;
     let diff = Infinity;
     let match = {};
     console.log('hue', color.hue, 'sat', color.sat, 'light', color.light);
     for (const piece of colorPieces) {
-      //??? fix hue wrap-around
-      const hueDiff = Math.abs(color.hue - piece.color.hue);
-      const satDiff = Math.abs(color.sat - piece.color.sat);
-      const lightDiff = Math.abs(color.light - piece.color.light);
+      const hueDiff = hueWeight * Math.abs(calcHueDiff(color, piece.matchColor));
+      const satDiff = Math.abs(color.sat - piece.matchColor.sat);
+      const lightDiff = Math.abs(color.light - piece.matchColor.light);
       const total = hueDiff + satDiff + lightDiff;
       if (total < diff) {
         diff = total;
@@ -189,7 +196,11 @@ function Importer({ close }) {
       }
       console.log(` ${piece.index}_${piece.code} (${total.toFixed(1)}) ${hueDiff.toFixed(1)} ${satDiff.toFixed(1)} ${lightDiff.toFixed(1)}`);
     }
-    console.log('MATCH ', match.code, match.index);
+    //console.log('MATCH ', match.code, match.index);
+    return match;
+  }
+
+  function calculateHueDiff(color0, color1) {
   }
 
   function verifyImage(fileOrBlob) {
@@ -286,7 +297,16 @@ function Importer({ close }) {
           <button onClick={close}>Close</button>
         </div>
         */}
-        <ColorsDisplay colors={colors} />
+        <div className={styles.displays}>
+          <ColorsDisplay
+            colors={colors}
+            size={250}
+          />
+          <ColorsDisplay
+            colors={[colorAverage]}
+            size={100}
+          />
+        </div>
       </div>
     </Fragment>
   );

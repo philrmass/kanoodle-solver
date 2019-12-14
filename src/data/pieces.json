@@ -2,61 +2,73 @@
   {
     "index": 0,
     "code": "L",
-    "color": "cfc4b2"
+    "color": "cfc4b2",
+    "matchColor": "a2a8a3"
   },
   {
     "index": 1,
     "code": "I",
-    "color": "ffd603"
+    "color": "ffd603",
+    "matchColor": "e7e204"
   },
   {
     "index": 2,
     "code": "B",
-    "color": "f63202"
+    "color": "f63202",
+    "matchColor": "d9240f"
   },
   {
     "index": 3,
     "code": "H",
-    "color": "f35e95"
+    "color": "f35e95",
+    "matchColor": "d05b8d"
   },
   {
     "index": 4,
     "code": "G",
-    "color": "b6d8e5"
+    "color": "b6d8e5",
+    "matchColor": "9acdea"
   },
   {
     "index": 5,
     "code": "E",
-    "color": "009b59"
+    "color": "009b59",
+    "matchColor": "17855e"
   },
   {
     "index": 6,
     "code": "D",
-    "color": "efc19f"
+    "color": "efc19f",
+    "matchColor": "e6d6cf"
   },
   {
     "index": 7,
     "code": "C",
-    "color": "0149c2"
+    "color": "0149c2",
+    "matchColor": "146bd5"
   },
   {
     "index": 8,
     "code": "K",
-    "color": "abe64c"
+    "color": "abe64c",
+    "matchColor": "adc304"
   },
   {
     "index": 9,
     "code": "A",
-    "color": "ff8a00"
+    "color": "ff8a00",
+    "matchColor": "e6881e"
   },
   {
     "index": 10,
     "code": "J",
-    "color": "925abb"
+    "color": "925abb",
+    "matchColor": "8d265c"
   },
   {
     "index": 11,
     "code": "F",
-    "color": "ffffe8"
+    "color": "ffffe8",
+    "matchColor": "e9f2e0"
   }
 ]

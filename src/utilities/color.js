@@ -33,9 +33,9 @@ function hexToRgb(hex) {
 }
 
 export function rgbToHex(rgb) {
-  const r = ('0' + rgb.red.toString(16)).slice(-2);
-  const g = ('0' + rgb.green.toString(16)).slice(-2);
-  const b = ('0' + rgb.blue.toString(16)).slice(-2);
+  const r = ('0' + Math.round(rgb.red).toString(16)).slice(-2);
+  const g = ('0' + Math.round(rgb.green).toString(16)).slice(-2);
+  const b = ('0' + Math.round(rgb.blue).toString(16)).slice(-2);
   return r + g + b;
 }
 
@@ -118,6 +118,43 @@ function hueToComponent(d0, d1, h) {
     return ((d1 - d0) * (4 - h) + d0);
   }
   return d0;
+}
+
+export function calcHueDiff(color0, color1) {
+  const hueMax = 360;
+  let diff = color0.hue - color1.hue;
+  while (diff > (hueMax / 2)) {
+    diff -= hueMax;
+  }
+  while (diff < -(hueMax / 2)) {
+    diff += hueMax;
+  }
+  return diff;
+}
+
+export function calcAverage(colors) {
+  if (colors.length === 0) {
+    return rgbToColor({ red: 0, green: 0, blue: 0});
+  }
+
+  let red = 0;
+  let green = 0;
+  let blue = 0;
+
+  for (const color of colors) {
+    red += color.red;
+    green += color.green;
+    blue += color.blue;
+  }
+  red /= colors.length;
+  green /= colors.length; 
+  blue /= colors.length;
+  console.log('__RGB', red.toFixed(1), green.toFixed(1), blue.toFixed(1));
+  const col = rgbToColor({ red, green, blue});
+  console.log('__COL', col);
+  console.log('__RGB1', hslToColor(col));
+
+  return rgbToColor({ red, green, blue});
 }
 
 export function parseColorData0(pixels) {

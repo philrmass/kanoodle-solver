@@ -3,21 +3,19 @@ import PropTypes from 'prop-types';
 import { rgbToHex } from '../utilities/color';
 import styles from '../styles/ColorsDisplay.module.css';
 
-function ColorsDisplay({ colors }) {
+function ColorsDisplay({ colors, size }) {
   const colorGrid = useRef(null);
 
   useEffect(() => {
     if (colors.length > 0) {
-      const size = 70;
       const across = Math.ceil(Math.sqrt(colors.length));
       const down = Math.ceil(colors.length / across);
+      const box = size / down;
       colorGrid.current.style.setProperty('grid-template-columns', '1fr '.repeat(across));
-      colorGrid.current.style.setProperty('width', `${across * size}px`);
-      colorGrid.current.style.setProperty('height', `${down * size}px`);
-
-      //??? compute color values
+      colorGrid.current.style.setProperty('width', `${across * box}px`);
+      colorGrid.current.style.setProperty('height', `${down * box}px`);
     }
-  }, [colors]);
+  }, [colors, size]);
 
   function buildColors() {
     return colors.map((color, index) => {
@@ -31,9 +29,11 @@ function ColorsDisplay({ colors }) {
           style={colorStyle}
         >
           <div>{background}</div>
-          <div>{color.hue}</div>
-          <div>{color.sat}</div>
-          <div>{color.light}</div>
+          {/*
+          */}
+          <div>{color.hue.toFixed(1)}</div>
+          <div>{color.sat.toFixed(1)}</div>
+          <div>{color.light.toFixed(1)}</div>
         </div>
       );
     });
@@ -52,6 +52,7 @@ function ColorsDisplay({ colors }) {
 
 ColorsDisplay.propTypes = {
   colors: PropTypes.arrayOf(PropTypes.object).isRequired,
+  size: PropTypes.number.isRequired,
 };
 
 export default ColorsDisplay;
