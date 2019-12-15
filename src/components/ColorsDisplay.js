@@ -3,12 +3,12 @@ import PropTypes from 'prop-types';
 import { rgbToHex } from '../utilities/color';
 import styles from '../styles/ColorsDisplay.module.css';
 
-function ColorsDisplay({ colors, size }) {
+function ColorsDisplay({ colors, size, width }) {
   const colorGrid = useRef(null);
 
   useEffect(() => {
     if (colors.length > 0) {
-      const across = Math.ceil(Math.sqrt(colors.length));
+      const across = width ? width : Math.ceil(Math.sqrt(colors.length));
       const down = Math.ceil(colors.length / across);
       const box = size / down;
       colorGrid.current.style.setProperty('grid-template-columns', '1fr '.repeat(across));
@@ -53,6 +53,7 @@ function ColorsDisplay({ colors, size }) {
 ColorsDisplay.propTypes = {
   colors: PropTypes.arrayOf(PropTypes.object).isRequired,
   size: PropTypes.number.isRequired,
+  width: PropTypes.number,
 };
 
 export default ColorsDisplay;

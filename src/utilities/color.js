@@ -149,10 +149,6 @@ export function calcAverage(colors) {
   red /= colors.length;
   green /= colors.length; 
   blue /= colors.length;
-  console.log('__RGB', red.toFixed(1), green.toFixed(1), blue.toFixed(1));
-  const col = rgbToColor({ red, green, blue});
-  console.log('__COL', col);
-  console.log('__RGB1', hslToColor(col));
 
   return rgbToColor({ red, green, blue});
 }

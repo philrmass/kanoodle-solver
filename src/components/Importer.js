@@ -2,10 +2,10 @@ import React, { Fragment, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { calcAverage, calcHueDiff, hexToColor, hslToColor, rgbToColor } from '../utilities/color';
 import pieces from '../data/pieces.json';
+import Board from './Board';
 import ColorsDisplay from './ColorsDisplay';
 import styles from '../styles/Importer.module.css';
 
-//??? detect 9+ pixels around the corners to determine color, reject outliers
 //??? look up color at other 51 locations, create board and display it
 //??? add level number, show that level before clicks, ask to save
 //??? add instructions
@@ -25,7 +25,7 @@ function Importer({ close }) {
   const [corners, setCorners] = useState([[-1, -1], [-1, -1], [-1, -1], [-1, -1]]);
   const [cornerIndex, setCornerIndex] = useState(0);
   const [colors, setColors] = useState([]);
-  const [colorAverage, setColorAverage] = useState(hexToColor('000000'));
+  const [board, setBoard] = useState((new Array(55)).fill(-1));
 
   useEffect(() => {
     drawImage();
@@ -38,8 +38,8 @@ function Importer({ close }) {
     const size = 8;
     let count = 0;
     for (const corner of corners) {
-      const x = offsetX + scale * corner[0];
-      const y = offsetY + scale * corner[1];
+      const x = (offsetX + scale * corner[0]) - size / 2;
+      const y = (offsetY + scale * corner[1]) - size / 2;
 
       if (x >= 0 && y >= 0) {
         ctx.fillRect(x, y, size, size);
@@ -49,11 +49,33 @@ function Importer({ close }) {
     }
 
     if (count === 4) {
-      const corner = corners[0];
-      const color = getImageColors(corner[0], corner[1]);
-      //??? color lookup
-      //const color = getImageColor([x, y]);
-      //const piece = matchPiece(color);
+      const centers = getCenters(corners, 11, 5);
+      const dot = 2;
+
+      for (const center of centers) {
+        const x = (offsetX + scale * center[0]) - dot / 2;
+        const y = (offsetY + scale * center[1]) - dot / 2;
+
+        ctx.fillRect(x, y, dot, dot);
+        ctx.strokeRect(x, y, dot, dot);
+      }
+
+      const aves = [];
+      const indices = [];
+      for (const center of centers) {
+        const x = Math.round(center[0]);
+        const y = Math.round(center[1]);
+        const cols = getImageColors(x, y);
+        const ave = calcAverage(cols.filter((col) => col.light >= 28));
+        const piece = matchPiece(ave);
+
+        if (ave) {
+          aves.push(ave);
+        }
+        indices.push(piece ? piece.index : -1);
+      }
+      setColors(aves);
+      setBoard(indices);
     }
   }, [corners, scale, offsetX, offsetY]);
 
@@ -66,6 +88,35 @@ function Importer({ close }) {
       ctx.fillRect(0, 0, canvas.current.width, canvas.current.height); 
       ctx.drawImage(image, offsetX, offsetY, dw, dh);
     }
+  }
+
+  function getCenters(corners, across, up) {
+    const blx = corners[0][0];
+    const bly = corners[0][1];
+    const brx = corners[1][0];
+    const bry = corners[1][1];
+    const tlx = corners[3][0];
+    const tly = corners[3][1];
+    const trx = corners[2][0];
+    const trY = corners[2][1];
+
+    const centers = [];
+    for (let row = up - 1; row >= 0; row--) {
+      const rowRatio = row / (up - 1);
+      const sx = blx + rowRatio * (tlx - blx);
+      const sy = bly + rowRatio * (tly - bly);
+      const ex = brx + rowRatio * (trx - brx);
+      const ey = bry + rowRatio * (trY - bry);
+
+      for (let col = 0; col < across; col++) {
+        const colRatio = col / (across - 1);
+        const x = sx + colRatio * (ex - sx);
+        const y = sy + colRatio * (ey - sy);
+        centers.push([x, y]);
+      }
+    }
+
+    return centers;
   }
 
   function handleKeyDown(e) {
@@ -145,12 +196,11 @@ function Importer({ close }) {
     setCornerIndex((index) => (index < 3) ? index + 1 : 0);
 
     const cols = getImageColors(x, y);
-    const ave = calcAverage(cols.filter((col) => col.light >= 30));
+    const ave = calcAverage(cols.filter((col) => col.light >= 26));
     const piece = matchPiece(ave);
-    console.log('AVE', ave.hue.toFixed(1), ave.sat.toFixed(1), ave.light.toFixed(1));
-    console.log(' PIECE', piece.index, ' ', piece.code);
-    setColors(cols);
-    setColorAverage(ave);
+    if (piece) {
+      console.log(' PIECE', piece.index, ' ', piece.code);
+    }
   }
 
   function getImageColors(x, y) {
@@ -181,10 +231,14 @@ function Importer({ close }) {
   }
 
   function matchPiece(color) {
+    if (color.light + color.sat < 60) {
+      return null;
+    }
+
     const hueWeight = 1.5;
     let diff = Infinity;
     let match = {};
-    console.log('hue', color.hue, 'sat', color.sat, 'light', color.light);
+    //console.log('hue', color.hue, 'sat', color.sat, 'light', color.light);
     for (const piece of colorPieces) {
       const hueDiff = hueWeight * Math.abs(calcHueDiff(color, piece.matchColor));
       const satDiff = Math.abs(color.sat - piece.matchColor.sat);
@@ -194,7 +248,7 @@ function Importer({ close }) {
         diff = total;
         match = piece;
       }
-      console.log(` ${piece.index}_${piece.code} (${total.toFixed(1)}) ${hueDiff.toFixed(1)} ${satDiff.toFixed(1)} ${lightDiff.toFixed(1)}`);
+      //console.log(` ${piece.index}_${piece.code} (${total.toFixed(1)}) ${hueDiff.toFixed(1)} ${satDiff.toFixed(1)} ${lightDiff.toFixed(1)}`);
     }
     //console.log('MATCH ', match.code, match.index);
     return match;
@@ -297,14 +351,16 @@ function Importer({ close }) {
           <button onClick={close}>Close</button>
         </div>
         */}
+        <div>
+          <Board
+            board={board}
+          />
+        </div>
         <div className={styles.displays}>
           <ColorsDisplay
             colors={colors}
             size={250}
-          />
-          <ColorsDisplay
-            colors={[colorAverage]}
-            size={100}
+            width={11}
           />
         </div>
       </div>
