@@ -25,4 +25,5 @@
 
 .displays {
   display: flex;
+  display: none;
 }

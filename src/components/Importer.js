@@ -6,11 +6,10 @@ import Board from './Board';
 import ColorsDisplay from './ColorsDisplay';
 import styles from '../styles/Importer.module.css';
 
-//??? look up color at other 51 locations, create board and display it
 //??? add level number, show that level before clicks, ask to save
 //??? add instructions
 
-function Importer({ close }) {
+function Importer({ levels, saveLevel, close }) {
   const maxSize = 500;
   const canvas = useRef(null);
   const [image, setImage] = useState(null);
@@ -25,7 +24,8 @@ function Importer({ close }) {
   const [corners, setCorners] = useState([[-1, -1], [-1, -1], [-1, -1], [-1, -1]]);
   const [cornerIndex, setCornerIndex] = useState(0);
   const [colors, setColors] = useState([]);
-  const [board, setBoard] = useState((new Array(55)).fill(-1));
+  const [levelIndex, setLevelIndex] = useState(0);
+  const [board, setBoard] = useState(levels[levelIndex] ? levels[levelIndex].start : null);
 
   useEffect(() => {
     drawImage();
@@ -198,9 +198,6 @@ function Importer({ close }) {
     const cols = getImageColors(x, y);
     const ave = calcAverage(cols.filter((col) => col.light >= 26));
     const piece = matchPiece(ave);
-    if (piece) {
-      console.log(' PIECE', piece.index, ' ', piece.code);
-    }
   }
 
   function getImageColors(x, y) {
@@ -254,7 +251,31 @@ function Importer({ close }) {
     return match;
   }
 
-  function calculateHueDiff(color0, color1) {
+  function handleLevelDec() {
+    setLevelIndex((index) => {
+      index--;
+      if (index < 0) {
+        index = 0;
+      }
+      const levelBoard = levels[index] ? levels[index].start : null;
+      setBoard(levelBoard);
+      console.log('L-', index, levels[index]);
+      return index;
+    });
+  }
+
+  function handleLevelInc() {
+    setLevelIndex((index) => {
+      index++;
+      const levelBoard = levels[index] ? levels[index].start : null;
+      setBoard(levelBoard);
+      console.log('L+', index, levels[index]);
+      return index;
+    });
+  }
+
+  function handleLevelSave() {
+    saveLevel(levelIndex, board);
   }
 
   function verifyImage(fileOrBlob) {
@@ -346,11 +367,12 @@ function Importer({ close }) {
             height={200}
           />
         </div>
-        {/*
         <div className={styles.bottomButtons}>
-          <button onClick={close}>Close</button>
+          <button onClick={handleLevelDec}>-</button>
+          <input type='number' value={levelIndex} />
+          <button onClick={handleLevelInc}>+</button>
+          <button onClick={handleLevelSave}>Save</button>
         </div>
-        */}
         <div>
           <Board
             board={board}
