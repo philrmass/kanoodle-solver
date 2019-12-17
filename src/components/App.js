@@ -2,12 +2,14 @@ import React, { Fragment, useState } from 'react';
 import Board from './Board';
 import Header from './Header';
 import Importer from './Importer';
+import { useLocalStorage } from '../utilities/storage';
+import levelsData from '../data/levels.json';
 import styles from '../styles/App.module.css';
-import levels from '../data/levels.json';
 
 function App() {
-  const [board, setBoard] = useState(levels[0].start);
-  const [display, setDisplay] = useState('importer');//null);
+  const [board, setBoard] = useState(levelsData[0].start);
+  const [display, setDisplay] = useState('importer');//null); //??? restore
+  const [levels, setLevels] = useLocalStorage('kanoodleLevels', levelsData);
 
   function doNothing(e) {
     e.stopPropagation();
@@ -15,7 +17,13 @@ function App() {
   }
 
   function saveLevel(index, data) {
-    console.log('SAVE', index, data);
+    const level = {
+      level: index,
+      start: data,
+    };
+    const lvls = [...levels];
+    lvls[index] = level;
+    setLevels(lvls);
   }
 
   return (

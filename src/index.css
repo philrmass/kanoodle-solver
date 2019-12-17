@@ -26,6 +26,13 @@ button {
   background: var(--bg-mid);
 }
 
+input[type=number] {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg-mid);
+}
+
 .active {
   color: var(--text-active);
 }

@@ -5,7 +5,7 @@ import pieces from '../data/pieces.json';
 
 function Board({ board }) {
   function getColor(piece) {
-    if (!piece || piece < 0 || piece >= pieces.length) {
+    if (piece < 0 || piece >= pieces.length) {
       return 'transparent';
     }
     const color = pieces[piece].color;
@@ -28,7 +28,7 @@ function Board({ board }) {
       for (let col = 0; col < cols; col++) {
         const key = `spot${row}-${col}`;
         const index = row * cols + col;
-        const piece = board ? board[index] : -1;;
+        const piece = board ? board[index] : -1;
         const color = getColor(piece);
         const left = col * spaceWidth + spotOffsetX;
         const top = row * spaceHeight + spotOffsetY;

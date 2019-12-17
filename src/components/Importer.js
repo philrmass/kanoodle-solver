@@ -6,12 +6,13 @@ import Board from './Board';
 import ColorsDisplay from './ColorsDisplay';
 import styles from '../styles/Importer.module.css';
 
-//??? add level number, show that level before clicks, ask to save
 //??? add instructions
 
 function Importer({ levels, saveLevel, close }) {
+  const lightMin = 22;
   const maxSize = 500;
   const canvas = useRef(null);
+  const keyCapture = useRef(null);
   const [image, setImage] = useState(null);
   const [imageWidth, setImageWidth] = useState(0);
   const [imageHeight, setImageHeight] = useState(0);
@@ -31,7 +32,6 @@ function Importer({ levels, saveLevel, close }) {
     drawImage();
 
     const ctx = canvas.current.getContext('2d');
-    ctx.strokeStyle = '#ffff00';
     ctx.fillStyle = '#00000080';
     ctx.lineWidth = 2;
 
@@ -42,6 +42,7 @@ function Importer({ levels, saveLevel, close }) {
       const y = (offsetY + scale * corner[1]) - size / 2;
 
       if (x >= 0 && y >= 0) {
+        ctx.strokeStyle = count === 0 ? '#ff8000' : '#ffff00';
         ctx.fillRect(x, y, size, size);
         ctx.strokeRect(x, y, size, size);
         count++;
@@ -66,7 +67,7 @@ function Importer({ levels, saveLevel, close }) {
         const x = Math.round(center[0]);
         const y = Math.round(center[1]);
         const cols = getImageColors(x, y);
-        const ave = calcAverage(cols.filter((col) => col.light >= 28));
+        const ave = calcAverage(cols.filter((col) => col.light >= lightMin));
         const piece = matchPiece(ave);
 
         if (ave) {
@@ -120,11 +121,16 @@ function Importer({ levels, saveLevel, close }) {
   }
 
   function handleKeyDown(e) {
+    let handled = true;
+
     switch (e.keyCode) {
       case 32:
         setScale(canvas.current.width / imageWidth);
         setOffsetX(0);
         setOffsetY(0);
+        if (keyCapture) {
+          keyCapture.current.focus();
+        }
         break;
       case 37:
         const dw = scale * imageWidth;
@@ -168,7 +174,12 @@ function Importer({ levels, saveLevel, close }) {
         setOffsetY((offset) => offset - dy);
         break;
       default:
+        handled = false;
         break;
+    }
+
+    if (handled) {
+      e.preventDefault();
     }
   }
 
@@ -196,12 +207,13 @@ function Importer({ levels, saveLevel, close }) {
     setCornerIndex((index) => (index < 3) ? index + 1 : 0);
 
     const cols = getImageColors(x, y);
-    const ave = calcAverage(cols.filter((col) => col.light >= 26));
-    const piece = matchPiece(ave);
+    const ave = calcAverage(cols.filter((col) => col.light >= lightMin));
+    const piece = matchPiece(ave, true);
+    console.log(`${ave.hue} ${ave.sat} ${ave.light}  ${piece && piece.code}`);
   }
 
   function getImageColors(x, y) {
-    const size = 5;
+    const size = 10;
     const colors = [];
 
     for (let iy = y - size; iy <= y + size; iy++) {
@@ -227,27 +239,34 @@ function Importer({ levels, saveLevel, close }) {
     return rgbToColor({ red, green, blue });
   }
 
-  function matchPiece(color) {
-    if (color.light + color.sat < 60) {
+  function matchPiece(color, useLog = false) {
+    if ((color.light < 30) && (color.light + color.sat < 55)) {
       return null;
     }
 
-    const hueWeight = 1.5;
     let diff = Infinity;
     let match = {};
-    //console.log('hue', color.hue, 'sat', color.sat, 'light', color.light);
+    if (useLog) {
+      console.log('hue', color.hue, 'sat', color.sat, 'light', color.light);
+    }
     for (const piece of colorPieces) {
+      const hueWeight = 2 * (color.sat / 100);
+      const lightWeight = 2 * ((100 - color.sat) / 100);
       const hueDiff = hueWeight * Math.abs(calcHueDiff(color, piece.matchColor));
       const satDiff = Math.abs(color.sat - piece.matchColor.sat);
-      const lightDiff = Math.abs(color.light - piece.matchColor.light);
+      const lightDiff = lightWeight * Math.abs(color.light - piece.matchColor.light);
       const total = hueDiff + satDiff + lightDiff;
       if (total < diff) {
         diff = total;
         match = piece;
       }
-      //console.log(` ${piece.index}_${piece.code} (${total.toFixed(1)}) ${hueDiff.toFixed(1)} ${satDiff.toFixed(1)} ${lightDiff.toFixed(1)}`);
+      if (useLog) {
+        console.log(` ${piece.index}_${piece.code} (${total.toFixed(1)}) ${hueDiff.toFixed(1)} ${satDiff.toFixed(1)} ${lightDiff.toFixed(1)} [${hueWeight.toFixed(1)}, ${lightWeight.toFixed(1)}]`);
+      }
     }
-    //console.log('MATCH ', match.code, match.index);
+    if (useLog) {
+      console.log('MATCH ', match.code, match.index);
+    }
     return match;
   }
 
@@ -257,21 +276,27 @@ function Importer({ levels, saveLevel, close }) {
       if (index < 0) {
         index = 0;
       }
-      const levelBoard = levels[index] ? levels[index].start : null;
-      setBoard(levelBoard);
-      console.log('L-', index, levels[index]);
-      return index;
+      return setBoardByIndex(index);
     });
   }
 
   function handleLevelInc() {
     setLevelIndex((index) => {
       index++;
-      const levelBoard = levels[index] ? levels[index].start : null;
-      setBoard(levelBoard);
-      console.log('L+', index, levels[index]);
-      return index;
+      return setBoardByIndex(index);
     });
+  }
+
+  function handleLevel(e) {
+    const index = e.target.value;
+    setLevelIndex(index);
+    setBoardByIndex(index);
+  }
+
+  function setBoardByIndex(index) {
+    const levelBoard = levels[index] ? levels[index].start : null;
+    setBoard(levelBoard);
+    return index;
   }
 
   function handleLevelSave() {
@@ -309,6 +334,10 @@ function Importer({ levels, saveLevel, close }) {
     canvas.current.width = width;
     canvas.current.height = height;
     ctx.drawImage(img, 0, 0, width, height);
+
+    if (keyCapture) {
+      keyCapture.current.focus();
+    }
   }
 
   function getImagePixels(img) {
@@ -341,8 +370,9 @@ function Importer({ levels, saveLevel, close }) {
   return (
     <Fragment>
       <div
-        onKeyDown={handleKeyDown}
         tabIndex={0}
+        ref={keyCapture}
+        onKeyDown={handleKeyDown}
       >
         <div className={styles.topButtons}>
           <button onClick={close}>Close</button>
@@ -369,7 +399,13 @@ function Importer({ levels, saveLevel, close }) {
         </div>
         <div className={styles.bottomButtons}>
           <button onClick={handleLevelDec}>-</button>
-          <input type='number' value={levelIndex} />
+          <input 
+            type='number'
+            min='0'
+            max='162'
+            value={levelIndex}
+            onChange={handleLevel}
+          />
           <button onClick={handleLevelInc}>+</button>
           <button onClick={handleLevelSave}>Save</button>
         </div>
