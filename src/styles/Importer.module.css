@@ -28,7 +28,7 @@
 }
 
 .displays {
-  display: none;
   display: flex;
+  display: none;
   margin-top: 8px;
 }
