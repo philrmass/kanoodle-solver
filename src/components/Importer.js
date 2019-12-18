@@ -6,8 +6,6 @@ import Board from './Board';
 import ColorsDisplay from './ColorsDisplay';
 import styles from '../styles/Importer.module.css';
 
-//??? add instructions
-
 function Importer({ levels, saveLevel, close }) {
   const lightMin = 22;
   const maxSize = 500;
@@ -240,7 +238,7 @@ function Importer({ levels, saveLevel, close }) {
   }
 
   function matchPiece(color, useLog = false) {
-    if ((color.light < 30) && (color.light + color.sat < 55)) {
+    if ((color.light < 40) && (color.light + color.sat < 60)) {
       return null;
     }
 
@@ -297,6 +295,10 @@ function Importer({ levels, saveLevel, close }) {
     const levelBoard = levels[index] ? levels[index].start : null;
     setBoard(levelBoard);
     return index;
+  }
+
+  function setBoardSpot(index, value) {
+    setBoard((board) => [...board.slice(0, index), value, ...board.slice(index + 1)]);
   }
 
   function handleLevelSave() {
@@ -412,6 +414,7 @@ function Importer({ levels, saveLevel, close }) {
         <div>
           <Board
             board={board}
+            setSpot={setBoardSpot}
           />
         </div>
         <div className={styles.displays}>

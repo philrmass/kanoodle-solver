@@ -1,15 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import styles from '../styles/Board.module.css';
 import pieces from '../data/pieces.json';
 
-function Board({ board }) {
+function Board({ board, setSpot }) {
+  const [lastSpot, setLastSpot] = useState(-1);
+
   function getColor(piece) {
     if (piece < 0 || piece >= pieces.length) {
       return 'transparent';
     }
     const color = pieces[piece].color;
     return `#${color}`;
+  }
+
+  function changeSpot(index, current, useLast) {
+    if (setSpot) {
+      let value = current + 1;
+      if (value >= pieces.length) {
+        value = -1;
+      }
+      console.log('SPOT', index, value, useLast);
+      if (useLast) {
+        setSpot(index, lastSpot);
+      } else {
+        setSpot(index, value);
+        setLastSpot(value);
+      }
+    }
   }
 
   function buildSpots() {
@@ -40,7 +58,15 @@ function Board({ board }) {
           height: `${spotHeight}%`,
         };
 
-        spots.push(<div key={key} className={styles.spot} style={spotStyle}></div>);
+        spots.push(
+          <div
+            key={key}
+            className={styles.spot}
+            style={spotStyle}
+            onClick={(e) => changeSpot(index, piece, e.ctrlKey)}
+          >
+          </div>
+        );
       }
     }
 
@@ -59,6 +85,7 @@ Board.propTypes = {
     PropTypes.object,
     PropTypes.arrayOf(PropTypes.number),
   ]),
+  setSpot: PropTypes.func,
 };
 
 export default Board;
