@@ -14,14 +14,15 @@ function Board({ board, setSpot }) {
     return `#${color}`;
   }
 
-  function changeSpot(index, current, useLast) {
+  function changeSpot(index, current, useLast, capture) {
     if (setSpot) {
       let value = current + 1;
       if (value >= pieces.length) {
         value = -1;
       }
-      console.log('SPOT', index, value, useLast);
-      if (useLast) {
+      if (capture) {
+        setLastSpot(current);
+      } else if (useLast) {
         setSpot(index, lastSpot);
       } else {
         setSpot(index, value);
@@ -63,7 +64,7 @@ function Board({ board, setSpot }) {
             key={key}
             className={styles.spot}
             style={spotStyle}
-            onClick={(e) => changeSpot(index, piece, e.ctrlKey)}
+            onClick={(e) => changeSpot(index, piece, e.ctrlKey, e.shiftKey)}
           >
           </div>
         );
