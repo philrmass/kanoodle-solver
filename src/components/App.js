@@ -9,7 +9,7 @@ import styles from '../styles/App.module.css';
 
 function App() {
   const [board, setBoard] = useState(levelsData[0].start);
-  const [display, setDisplay] = useState('importer');//null);
+  const [display, setDisplay] = useState(null);
   const [levels, setLevels] = useLocalStorage('kanoodleLevels', levelsData);
 
   function doNothing(e) {
