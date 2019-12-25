@@ -2,6 +2,7 @@ import React, { Fragment, useState } from 'react';
 import Board from './Board';
 import Header from './Header';
 import Importer from './Importer';
+import Solver from './Solver';
 import { saveData } from '../utilities/file';
 import { useLocalStorage } from '../utilities/storage';
 import levelsData from '../data/levels.json';
@@ -9,7 +10,7 @@ import styles from '../styles/App.module.css';
 
 function App() {
   const [board, setBoard] = useState(levelsData[0].start);
-  const [display, setDisplay] = useState(null);
+  const [display, setDisplay] = useState('solver');//null);
   const [levels, setLevels] = useLocalStorage('kanoodleLevels', levelsData);
 
   function doNothing(e) {
@@ -47,11 +48,18 @@ function App() {
             close={() => setDisplay(null)}
           />
         }
+        { display === 'solver' &&
+          <Solver
+            levels={levels}
+            close={() => setDisplay(null)}
+          />
+        }
         { display === null &&
           <Fragment>
             <div className={styles.buttons}>
-              <button onClick={() => setDisplay('importer')}>Import Levels</button>
-              <button onClick={() => exportLevels()}>Export Levels</button>
+              <button onClick={() => setDisplay('solver')}>Solve</button>
+              <button onClick={() => setDisplay('importer')}>Import</button>
+              <button onClick={() => exportLevels()}>Export</button>
             </div>
             <Board
               board={board}

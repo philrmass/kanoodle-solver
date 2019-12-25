@@ -1,0 +1,33 @@
+.topButtons {
+  display: flex;
+  margin-bottom: 16px;
+}
+
+/*
+.canvasWrap {
+  display: inline-block;
+  font-size: 0;
+  overflow: hidden;
+}
+
+.canvas {
+  background: var(--bg-mid);
+}
+
+*/
+.bottomButtons {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.bottomButtons > * {
+  margin-right: 4px;
+}
+/*
+
+.displays {
+  display: flex;
+  display: none;
+  margin-top: 8px;
+}
+*/
