@@ -2,44 +2,49 @@ import React, { Fragment, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import pieces from '../data/pieces.json';
 import Board from './Board';
-import { verifyLevel } from '../utilities/game';
+import { getBlankBoard, verifyBoard } from '../utilities/game';
 import styles from '../styles/Solver.module.css';
 
 function Solver({ levels, close }) {
   const levelMax = 162;
   const keyCapture = useRef(null);
   const [levelIndex, setLevelIndex] = useState(0);
+  const [board, setBoard] = useState(levels[levelIndex].start);
 
   function handleLevelDec() {
     setLevelIndex((index) => {
-      index--;
-      if (index < 0) {
-        index = 0;
-      }
+      index = verifyIndex(index - 1);
+      setBoard(levels[index].start);
       return index;
     });
   }
 
   function handleLevelInc() {
     setLevelIndex((index) => {
-      index++;
-      if (index > levelMax) {
-        index = levelMax;
-      }
+      index = verifyIndex(index + 1);
+      setBoard(levels[index].start);
       return index;
     });
   }
 
   function handleLevel(e) {
-    let index = e.target.value;
-    //??? functionalize
+    const index = verifyIndex(e.target.value);
+    setBoard(levels[index].start);
+    setLevelIndex(index);
+  }
+
+  function verifyIndex(index) {
     if (index < 0) {
-      index = 0;
+      return 0;
     }
     if (index > levelMax) {
-      index = levelMax;
+      return levelMax;
     }
-    setLevelIndex(index);
+    return index;
+  }
+
+  function clearBoard() {
+    setBoard(getBlankBoard());
   }
 
   function handleKeyDown(e) {
@@ -59,9 +64,9 @@ function Solver({ levels, close }) {
     }
   }
 
-  function solve() {
+  function solveBoard() {
     for (let i = 0; i < 162; i++) {
-      const ok = verifyLevel(levels[i].start, pieces);
+      const ok = verifyBoard(levels[i].start, pieces);
       console.log(`${i} ${ok ? '' : 'Error'}`);
     }
   }
@@ -75,11 +80,6 @@ function Solver({ levels, close }) {
       >
         <div className={styles.topButtons}>
           <button onClick={close}>Close</button>
-        </div>
-        <Board 
-          board={levels[levelIndex].start}
-        />
-        <div className={styles.bottomButtons}>
           <button onClick={handleLevelDec}>-</button>
           <input 
             type='number'
@@ -89,7 +89,13 @@ function Solver({ levels, close }) {
             onChange={handleLevel}
           />
           <button onClick={handleLevelInc}>+</button>
-          <button onClick={solve}>Solve</button>
+          <button onClick={clearBoard}>Clear</button>
+        </div>
+        <Board 
+          board={board}
+        />
+        <div className={styles.bottomButtons}>
+          <button onClick={solveBoard}>Solve</button>
         </div>
       </section>
     </Fragment>

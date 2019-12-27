@@ -1,3 +1,12 @@
+export const blank = -1;
+export const boardRows = 5;
+export const boardColumns = 11;
+export const boardSize = (boardRows * boardColumns);
+
+export function getBlankBoard() {
+  return new Array(boardSize).fill(blank);
+}
+
 export function verifyLevel(board, pieces) {
   const counts = board.reduce((counts, spot) => {
     if (spot > -1 && spot < counts.length) {

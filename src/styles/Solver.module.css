@@ -3,6 +3,10 @@
   margin-bottom: 16px;
 }
 
+.topButtons > * {
+  margin-right: 4px;
+}
+
 .bottomButtons {
   margin-top: 16px;
   margin-bottom: 16px;
