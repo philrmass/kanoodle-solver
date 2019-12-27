@@ -2,6 +2,7 @@ import React, { Fragment, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import pieces from '../data/pieces.json';
 import Board from './Board';
+import { verifyLevel } from '../utilities/game';
 import styles from '../styles/Solver.module.css';
 
 function Solver({ levels, close }) {
@@ -59,11 +60,10 @@ function Solver({ levels, close }) {
   }
 
   function solve() {
-    const counts = levels[1].start.reduce((counts, spot) => {
-      counts[spot] = counts[spot] + 1;
-      return counts;
-    }, new Array(12).fill(0));
-    console.log('SOLVE', pieces.length, levels.length, '\ncounts', counts.map((c, i) => `${pieces[i].name} = ${c}`));
+    for (let i = 0; i < 162; i++) {
+      const ok = verifyLevel(levels[i].start, pieces);
+      console.log(`${i} ${ok ? '' : 'Error'}`);
+    }
   }
 
   return (
