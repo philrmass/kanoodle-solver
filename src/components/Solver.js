@@ -2,7 +2,7 @@ import React, { Fragment, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import pieces from '../data/pieces.json';
 import Board from './Board';
-import { getBlankBoard, verifyBoard } from '../utilities/game';
+import { getBlankBoard, placePiece, verifyBoard } from '../utilities/game';
 import styles from '../styles/Solver.module.css';
 
 function Solver({ levels, close }) {
@@ -64,10 +64,18 @@ function Solver({ levels, close }) {
     }
   }
 
+  function placeOnBoard() {
+    console.log('PLACE');
+    //setBoard((board) => placePiece(piece, orientation, board));
+  }
+
   function solveBoard() {
+    console.log('SOLVE');
     for (let i = 0; i < 162; i++) {
-      const ok = verifyBoard(levels[i].start, pieces);
-      console.log(`${i} ${ok ? '' : 'Error'}`);
+      const ok = verifyBoard(levels[i].start);
+      if (!ok) {
+        console.log(`${i} ERROR`);
+      }
     }
   }
 
@@ -94,6 +102,25 @@ function Solver({ levels, close }) {
         <Board 
           board={board}
         />
+        <div className={styles.bottomButtons}>
+          <span>Piece</span>
+          <input 
+            type='number'
+            min='0'
+            max={levelMax}
+            value={levelIndex}
+            onChange={handleLevel}
+          />
+          <span>Orientation</span>
+          <input 
+            type='number'
+            min='0'
+            max={levelMax}
+            value={levelIndex}
+            onChange={handleLevel}
+          />
+          <button onClick={placeOnBoard}>Place</button>
+        </div>
         <div className={styles.bottomButtons}>
           <button onClick={solveBoard}>Solve</button>
         </div>
