@@ -64,6 +64,10 @@ function Solver({ levels, close }) {
     }
   }
 
+  function showOnBoard(index) {
+    console.log('SHOW', index);
+  }
+
   function placeOnBoard() {
     console.log('PLACE');
     //setBoard((board) => placePiece(piece, orientation, board));
@@ -101,6 +105,7 @@ function Solver({ levels, close }) {
         </div>
         <Board 
           board={board}
+          pickSpot={showOnBoard}
         />
         <div className={styles.bottomButtons}>
           <span>Piece</span>

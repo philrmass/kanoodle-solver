@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import styles from '../styles/Board.module.css';
 import pieces from '../data/pieces.json';
 
-function Board({ board, setSpot }) {
+function Board({ board, setSpot, pickSpot }) {
   const [lastSpot, setLastSpot] = useState(-1);
 
   function getColor(piece) {
@@ -15,6 +15,9 @@ function Board({ board, setSpot }) {
   }
 
   function changeSpot(index, current, useLast, capture) {
+    if (pickSpot) {
+      pickSpot(index);
+    }
     if (setSpot) {
       let value = current + 1;
       if (value >= pieces.length) {
@@ -87,6 +90,7 @@ Board.propTypes = {
     PropTypes.arrayOf(PropTypes.number),
   ]),
   setSpot: PropTypes.func,
+  pickSpot: PropTypes.func,
 };
 
 export default Board;
