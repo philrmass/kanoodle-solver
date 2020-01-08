@@ -9,6 +9,10 @@ export function getBlankBoard() {
   return new Array(boardSize).fill(blank);
 }
 
+export function canPlacePiece(piece, ori, spot, board) {
+  return false;
+}
+
 export function placePiece(index, piece, orientation, board) {
   const placed = [...board];
   return placed;

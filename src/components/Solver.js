@@ -2,14 +2,25 @@ import React, { Fragment, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import pieces from '../data/pieces.json';
 import Board from './Board';
-import { getBlankBoard, placePiece, verifyBoard } from '../utilities/game';
+import { 
+  getBlankBoard, 
+  canPlacePiece,
+  placePiece, 
+  verifyBoard,
+} from '../utilities/game';
 import styles from '../styles/Solver.module.css';
 
 function Solver({ levels, close }) {
   const levelMax = 162;
+  const pieceMax = 11;
+  const oriMax = 7;
   const keyCapture = useRef(null);
   const [levelIndex, setLevelIndex] = useState(0);
+  const [piece, setPiece] = useState(0);
+  const [ori, setOri] = useState(0);
   const [board, setBoard] = useState(levels[levelIndex].start);
+  const [isSolving, setIsSolving] = useState(false);
+  const [steps, setSteps] = useState([]);
 
   function handleLevelDec() {
     setLevelIndex((index) => {
@@ -43,13 +54,59 @@ function Solver({ levels, close }) {
     return index;
   }
 
+  function handlePiece(e) {
+    const p = verifyPiece(e.target.value);
+    setPiece(p);
+  }
+
+  function verifyPiece(piece) {
+    if (piece < 0) {
+      return 0;
+    }
+    if (piece > pieceMax) {
+      return pieceMax;
+    }
+    return piece;
+  }
+
+  function handleOri(e) {
+    const p = verifyOri(e.target.value);
+    setOri(p);
+  }
+
+  function verifyOri(ori) {
+    if (ori < 0) {
+      return 0;
+    }
+    if (ori > oriMax) {
+      return oriMax;
+    }
+    return ori;
+  }
+
   function clearBoard() {
     setBoard(getBlankBoard());
+  }
+
+  function start() {
+    setIsSolving(true);
+    const step = {
+      board: [...board],
+      state: {},
+      last: null,
+      next: [],
+    };
+    setSteps([step]);
+  }
+
+  function stop() {
+    setIsSolving(false);
   }
 
   function handleKeyDown(e) {
     let handled = true;
 
+    //??? handle arrows for piece and ori
     switch (e.keyCode) {
       case 32:
         console.log('YO');
@@ -64,13 +121,15 @@ function Solver({ levels, close }) {
     }
   }
 
-  function showOnBoard(index) {
-    console.log('SHOW', index);
+  function showOnBoard(spot) {
+    //??? add canPlacePiece to game util, use piece and ori
+    const canPlace = canPlacePiece(piece, ori, spot, steps.slice(-1).board);
+    console.log('SHOW', spot, canPlace);
   }
 
   function placeOnBoard() {
     console.log('PLACE');
-    //setBoard((board) => placePiece(piece, orientation, board));
+    //setBoard((board) => placePiece(piece, ori, board));
   }
 
   function solveBoard() {
@@ -92,16 +151,19 @@ function Solver({ levels, close }) {
       >
         <div className={styles.topButtons}>
           <button onClick={close}>Close</button>
-          <button onClick={handleLevelDec}>-</button>
+          <button disabled={isSolving} onClick={handleLevelDec}>-</button>
           <input 
             type='number'
+            disabled={isSolving}
             min='0'
             max={levelMax}
             value={levelIndex}
             onChange={handleLevel}
           />
-          <button onClick={handleLevelInc}>+</button>
-          <button onClick={clearBoard}>Clear</button>
+          <button disabled={isSolving} onClick={handleLevelInc}>+</button>
+          <button disabled={isSolving} onClick={clearBoard}>Clear</button>
+          <button disabled={isSolving} onClick={start}>Start</button>
+          <button disabled={!isSolving} onClick={stop}>Stop</button>
         </div>
         <Board 
           board={board}
@@ -112,19 +174,19 @@ function Solver({ levels, close }) {
           <input 
             type='number'
             min='0'
-            max={levelMax}
-            value={levelIndex}
-            onChange={handleLevel}
+            max={pieceMax}
+            value={piece}
+            onChange={handlePiece}
           />
           <span>Orientation</span>
           <input 
             type='number'
             min='0'
-            max={levelMax}
-            value={levelIndex}
-            onChange={handleLevel}
+            max={oriMax}
+            value={ori}
+            onChange={handleOri}
           />
-          <button onClick={placeOnBoard}>Place</button>
+          <button onClick={placeOnBoard}>Next</button>
         </div>
         <div className={styles.bottomButtons}>
           <button onClick={solveBoard}>Solve</button>

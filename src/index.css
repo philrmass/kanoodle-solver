@@ -3,6 +3,8 @@
   --text-active: #fff840;
   --bg-dark: #383838;
   --bg-mid: #606060;
+  --disabled-bg: #707070;
+  --disabled-fg: #909090;
   --border: #a0a0a0;
 }
 
@@ -26,11 +28,23 @@ button {
   background: var(--bg-mid);
 }
 
+button:disabled {
+  border-color: var(--disabled-fg);
+  color: var(--disabled-fg);
+  background: var(--disabled-bg);
+}
+
 input[type=number] {
   padding: 4px 8px;
   border: 1px solid var(--border);
   border-radius: 2px;
   background: var(--bg-mid);
+}
+
+input[type=number]:disabled {
+  border-color: var(--disabled-fg);
+  color: var(--disabled-fg);
+  background: var(--disabled-bg);
 }
 
 .active {
