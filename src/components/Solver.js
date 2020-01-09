@@ -18,7 +18,7 @@ function Solver({ levels, close }) {
   const [levelIndex, setLevelIndex] = useState(0);
   const [piece, setPiece] = useState(0);
   const [ori, setOri] = useState(0);
-  const [board, setBoard] = useState(levels[levelIndex].start);
+  const [board, setBoard] = useState(getBlankBoard());//levels[levelIndex].start);
   const [isSolving, setIsSolving] = useState(false);
   const [steps, setSteps] = useState([]);
 
@@ -122,14 +122,20 @@ function Solver({ levels, close }) {
   }
 
   function showOnBoard(spot) {
-    //??? add canPlacePiece to game util, use piece and ori
-    const canPlace = canPlacePiece(piece, ori, spot, steps.slice(-1).board);
-    console.log('SHOW', spot, canPlace);
+    const lastStep = steps[steps.length - 1];
+    if (lastStep) {
+      const brd = lastStep.board;
+      if (canPlacePiece(piece, ori, spot, brd)) {
+        setBoard(placePiece(piece, ori, spot, brd));
+      } else {
+        //??? flash board red
+        console.log('CANT-PLACE', piece, ori, spot);
+      }
+    }
   }
 
   function placeOnBoard() {
     console.log('PLACE');
-    //setBoard((board) => placePiece(piece, ori, board));
   }
 
   function solveBoard() {
