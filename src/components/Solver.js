@@ -1,4 +1,4 @@
-import React, { Fragment, useRef, useState } from 'react';
+import React, { Fragment, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import pieces from '../data/pieces.json';
 import Board from './Board';
@@ -18,9 +18,14 @@ function Solver({ levels, close }) {
   const [levelIndex, setLevelIndex] = useState(0);
   const [piece, setPiece] = useState(0);
   const [ori, setOri] = useState(0);
+  const [spot, setSpot] = useState(null);
   const [board, setBoard] = useState(getBlankBoard());//levels[levelIndex].start);
   const [isSolving, setIsSolving] = useState(false);
   const [steps, setSteps] = useState([]);
+
+  useEffect(() => {
+    showOnBoard(piece, ori, spot, steps);
+  }, [piece, ori, spot, steps]);
 
   function handleLevelDec() {
     setLevelIndex((index) => {
@@ -104,12 +109,28 @@ function Solver({ levels, close }) {
   }
 
   function handleKeyDown(e) {
+    const space = 32;
+    const left = 37;
+    const up = 38;
+    const right = 39;
+    const down = 40;
     let handled = true;
 
-    //??? handle arrows for piece and ori
     switch (e.keyCode) {
-      case 32:
+      case space:
         console.log('YO');
+        break;
+      case up:
+        setPiece(verifyPiece(piece + 1));
+        break;
+      case down:
+        setPiece(verifyPiece(piece - 1));
+        break;
+      case right:
+        setOri(verifyOri(ori + 1));
+        break;
+      case left:
+        setOri(verifyOri(ori - 1));
         break;
       default:
         handled = false;
@@ -121,10 +142,9 @@ function Solver({ levels, close }) {
     }
   }
 
-  function showOnBoard(spot) {
-    const lastStep = steps[steps.length - 1];
-    if (lastStep) {
-      const brd = lastStep.board;
+  function showOnBoard(piece, ori, spot, steps) {
+    if (spot && steps.length > 0) {
+      const brd = steps[steps.length - 1].board;
       if (canPlacePiece(piece, ori, spot, brd)) {
         setBoard(placePiece(piece, ori, spot, brd));
       } else {
@@ -173,7 +193,7 @@ function Solver({ levels, close }) {
         </div>
         <Board 
           board={board}
-          pickSpot={showOnBoard}
+          pickSpot={setSpot}
         />
         <div className={styles.bottomButtons}>
           <span>Piece</span>

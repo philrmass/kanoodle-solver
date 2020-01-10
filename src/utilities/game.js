@@ -22,8 +22,10 @@ export function placePiece(piece, ori, spot, board) {
 }
 
 function rotateDots(dots, ori) {
-  const flipY = (ori % 2) === 1;
-  const rotation = Math.floor(ori / 2);
+  //??? add flipX?
+  //const flipX = Math.floor(ori / 8) % 2 === 1;
+  const flipY = Math.floor(ori / 4) % 2 === 1;
+  const rotation = ori % 4;
 
   const flipped = flipY ? dots.map((dot) => [dot[0], -dot[1]]) : dots;
   return flipped.map((dot) => {
@@ -48,7 +50,9 @@ function canPlaceDots(dots, spot, board) {
   return dots.every((dot) => {
     const x = spotX + dot[0];
     const y = spotY + dot[1];
-    return (x >= 0 && x < boardColumns && y >= 0 && y < boardRows);
+    const inBounds = (x >= 0 && x < boardColumns && y >= 0 && y < boardRows);
+    const dotSpot = (y * boardColumns) + x;
+    return inBounds && (board[dotSpot] === -1);
   });
 }
 
