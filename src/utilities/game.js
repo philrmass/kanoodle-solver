@@ -4,9 +4,35 @@ export const blank = -1;
 export const boardRows = 5;
 export const boardColumns = 11;
 export const boardSize = (boardRows * boardColumns);
+export const pieceMax = pieces.length - 1;
+export const oriMax = 7;
 
 export function getBlankBoard() {
   return new Array(boardSize).fill(blank);
+}
+
+export function verifyBoard(board) {
+  const counts = board.reduce((counts, spot) => {
+    if (spot > -1 && spot < counts.length) {
+      counts[spot] = counts[spot] + 1;
+    }
+    return counts;
+  }, new Array(12).fill(0));
+
+  return counts.every((count, index) => {
+    const pieceCount = pieces[index].dots.length;
+    return count === pieceCount || count === 0;
+  });
+}
+
+export function isBoardSolved(board) {
+  console.error('isBoardSolved', board); // eslint-disable-line no-console
+  return false;
+}
+
+export function pickFirstBlankSpot(board, excludedSpots = []) {
+  console.error('pickFirstBlankSpot', board, excludedSpots); // eslint-disable-line no-console
+  return 0;
 }
 
 export function canPlacePiece(piece, ori, spot, board) {
@@ -74,16 +100,23 @@ function getSpotXY(spot) {
   return [spotX, spotY];
 }
 
-export function verifyBoard(board) {
-  const counts = board.reduce((counts, spot) => {
-    if (spot > -1 && spot < counts.length) {
-      counts[spot] = counts[spot] + 1;
-    }
-    return counts;
-  }, new Array(12).fill(0));
-
-  return counts.every((count, index) => {
-    const pieceCount = pieces[index].spots.length;
-    return count === pieceCount || count === 0;
-  });
+export function verifyPiece(piece) {
+  if (piece < 0) {
+    return 0;
+  }
+  if (piece > pieceMax) {
+    return pieceMax;
+  }
+  return piece;
 }
+
+export function verifyOri(ori) {
+  if (ori < 0) {
+    return 0;
+  }
+  if (ori > oriMax) {
+    return oriMax;
+  }
+  return ori;
+}
+

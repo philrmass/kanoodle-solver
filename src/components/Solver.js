@@ -1,25 +1,29 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import pieces from '../data/pieces.json';
 import Board from './Board';
-import { 
-  getBlankBoard, 
+import {
+  pieceMax,
+  oriMax,
+  getBlankBoard,
+  //isBoardSolved,
+  //pickFirstBlankSpot,
   canPlacePiece,
-  placePiece, 
+  placePiece,
   verifyBoard,
+  verifyPiece,
+  verifyOri,
 } from '../utilities/game';
 import styles from '../styles/Solver.module.css';
 
 function Solver({ levels, close }) {
-  const levelMax = 162;
-  const pieceMax = 11;
-  const oriMax = 7;
+  const levelMax = levels.length - 1;
   const keyCapture = useRef(null);
-  const [levelIndex, setLevelIndex] = useState(0);
+  const firstUnsolved = levels.findIndex((level) => !level.end);
+  const [level, setLevel] = useState(firstUnsolved);
   const [piece, setPiece] = useState(0);
   const [ori, setOri] = useState(0);
   const [spot, setSpot] = useState(null);
-  const [board, setBoard] = useState(getBlankBoard());//levels[levelIndex].start);
+  const [board, setBoard] = useState(levels[level].start);
   const [isSolving, setIsSolving] = useState(false);
   const [steps, setSteps] = useState([]);
 
@@ -27,66 +31,20 @@ function Solver({ levels, close }) {
     showOnBoard(piece, ori, spot, steps);
   }, [piece, ori, spot, steps]);
 
-  function handleLevelDec() {
-    setLevelIndex((index) => {
-      index = verifyIndex(index - 1);
-      setBoard(levels[index].start);
-      return index;
-    });
+  function handleLevel(level) {
+    level = verifyLevel(level);
+    setBoard(levels[level].start);
+    setLevel(level);
   }
 
-  function handleLevelInc() {
-    setLevelIndex((index) => {
-      index = verifyIndex(index + 1);
-      setBoard(levels[index].start);
-      return index;
-    });
-  }
-
-  function handleLevel(e) {
-    const index = verifyIndex(e.target.value);
-    setBoard(levels[index].start);
-    setLevelIndex(index);
-  }
-
-  function verifyIndex(index) {
-    if (index < 0) {
+  function verifyLevel(level) {
+    if (level < 0) {
       return 0;
     }
-    if (index > levelMax) {
+    if (level > levelMax) {
       return levelMax;
     }
-    return index;
-  }
-
-  function handlePiece(e) {
-    const p = verifyPiece(e.target.value);
-    setPiece(p);
-  }
-
-  function verifyPiece(piece) {
-    if (piece < 0) {
-      return 0;
-    }
-    if (piece > pieceMax) {
-      return pieceMax;
-    }
-    return piece;
-  }
-
-  function handleOri(e) {
-    const p = verifyOri(e.target.value);
-    setOri(p);
-  }
-
-  function verifyOri(ori) {
-    if (ori < 0) {
-      return 0;
-    }
-    if (ori > oriMax) {
-      return oriMax;
-    }
-    return ori;
+    return level;
   }
 
   function clearBoard() {
@@ -99,7 +57,6 @@ function Solver({ levels, close }) {
       board: [...board],
       state: {},
       last: null,
-      next: [],
     };
     setSteps([step]);
   }
@@ -109,7 +66,6 @@ function Solver({ levels, close }) {
   }
 
   function handleKeyDown(e) {
-    const space = 32;
     const left = 37;
     const up = 38;
     const right = 39;
@@ -117,9 +73,6 @@ function Solver({ levels, close }) {
     let handled = true;
 
     switch (e.keyCode) {
-      case space:
-        console.log('YO');
-        break;
       case up:
         setPiece(verifyPiece(piece + 1));
         break;
@@ -147,25 +100,34 @@ function Solver({ levels, close }) {
       const brd = steps[steps.length - 1].board;
       if (canPlacePiece(piece, ori, spot, brd)) {
         setBoard(placePiece(piece, ori, spot, brd));
-      } else {
-        //??? flash board red
-        console.log('CANT-PLACE', piece, ori, spot);
       }
     }
-  }
-
-  function placeOnBoard() {
-    console.log('PLACE');
   }
 
   function solveBoard() {
-    console.log('SOLVE');
-    for (let i = 0; i < 162; i++) {
-      const ok = verifyBoard(levels[i].start);
-      if (!ok) {
-        console.log(`${i} ERROR`);
-      }
+    const ok = verifyBoard(board);
+    console.log('SOLVE', ok); // eslint-disable-line no-console
+  }
+
+  function solveNext() {
+    console.log('NEXT'); // eslint-disable-line no-console
+    // find empty spot not already picked
+    // check all orientations of next piece until a piece fits
+    // if fits, add step and add to back of possibles
+    //   if solved, add to solutions
+    // if all possibilities are used, add to back of deadEnds
+    // ??? add solutions, deadEnds, possibles
+    /*
+    {
+      setIsSolving(true);
+      const step = {
+        board: [...board],
+        state: {},
+        last: null,
+      };
+      setSteps([step]);
     }
+    */
   }
 
   return (
@@ -177,45 +139,45 @@ function Solver({ levels, close }) {
       >
         <div className={styles.topButtons}>
           <button onClick={close}>Close</button>
-          <button disabled={isSolving} onClick={handleLevelDec}>-</button>
-          <input 
+          <button disabled={isSolving} onClick={() => handleLevel(level - 1)}>-</button>
+          <input
             type='number'
             disabled={isSolving}
             min='0'
             max={levelMax}
-            value={levelIndex}
-            onChange={handleLevel}
+            value={level}
+            onChange={(e) => handleLevel(e.target.value)}
           />
-          <button disabled={isSolving} onClick={handleLevelInc}>+</button>
+          <button disabled={isSolving} onClick={() => handleLevel(level + 1)}>+</button>
           <button disabled={isSolving} onClick={clearBoard}>Clear</button>
           <button disabled={isSolving} onClick={start}>Start</button>
           <button disabled={!isSolving} onClick={stop}>Stop</button>
         </div>
-        <Board 
+        <Board
           board={board}
           pickSpot={setSpot}
         />
         <div className={styles.bottomButtons}>
           <span>Piece</span>
-          <input 
+          <input
             type='number'
             min='0'
             max={pieceMax}
             value={piece}
-            onChange={handlePiece}
+            onChange={(e) => setPiece(verifyPiece(e.target.value))}
           />
           <span>Orientation</span>
-          <input 
+          <input
             type='number'
             min='0'
             max={oriMax}
             value={ori}
-            onChange={handleOri}
+            onChange={(e) => setOri(verifyOri(e.target.value))}
           />
-          <button onClick={placeOnBoard}>Next</button>
         </div>
         <div className={styles.bottomButtons}>
           <button onClick={solveBoard}>Solve</button>
+          <button onClick={solveNext}>Next</button>
         </div>
       </section>
     </Fragment>

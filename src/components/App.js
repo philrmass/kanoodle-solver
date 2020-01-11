@@ -9,7 +9,7 @@ import levelsData from '../data/levels.json';
 import styles from '../styles/App.module.css';
 
 function App() {
-  const [board, setBoard] = useState(levelsData[0].start);
+  const [board] = useState(levelsData[0].start);
   const [display, setDisplay] = useState('solver');//null);
   const [levels, setLevels] = useLocalStorage('kanoodleLevels', levelsData);
 
@@ -33,7 +33,7 @@ function App() {
   }
 
   return (
-    <div 
+    <div
       className={styles.page}
       onDragEnter={doNothing}
       onDragOver={doNothing}

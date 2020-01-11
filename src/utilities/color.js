@@ -147,7 +147,7 @@ export function calcAverage(colors) {
     blue += color.blue;
   }
   red /= colors.length;
-  green /= colors.length; 
+  green /= colors.length;
   blue /= colors.length;
 
   return rgbToColor({ red, green, blue});

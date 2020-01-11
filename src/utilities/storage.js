@@ -7,7 +7,7 @@ export function useLocalStorage(key, initialValue) {
       try {
         return JSON.parse(stored);
       } catch (err) {
-        console.error('localStorage error:', key, stored, err);
+        console.error('localStorage error:', key, stored, err); // eslint-disable-line no-console
       }
     }
     window.localStorage.setItem(key, JSON.stringify(initialValue));

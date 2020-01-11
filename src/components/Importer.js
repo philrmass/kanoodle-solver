@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { calcAverage, calcHueDiff, hexToColor, hslToColor, rgbToColor } from '../utilities/color';
+import { calcAverage, calcHueDiff, hexToColor, rgbToColor } from '../utilities/color';
 import pieces from '../data/pieces.json';
 import Board from './Board';
 import ColorsDisplay from './ColorsDisplay';
@@ -84,7 +84,7 @@ function Importer({ levels, saveLevel, close }) {
       const dw = scale * imageWidth;
       const dh = scale * imageHeight;
       ctx.fillStyle = '#606060';
-      ctx.fillRect(0, 0, canvas.current.width, canvas.current.height); 
+      ctx.fillRect(0, 0, canvas.current.width, canvas.current.height);
       ctx.drawImage(image, offsetX, offsetY, dw, dh);
     }
   }
@@ -131,8 +131,6 @@ function Importer({ levels, saveLevel, close }) {
         }
         break;
       case 37:
-        const dw = scale * imageWidth;
-        const diff = 
         setOffsetX((offset) => offset - 10);
         break;
       case 38:
@@ -145,6 +143,8 @@ function Importer({ levels, saveLevel, close }) {
         setOffsetY((offset) => offset + 10);
         break;
       case 187:
+        //??? make zoom function
+        /*
         let dw0 = scale * imageWidth;
         let dh0 = scale * imageHeight;
         let value = 1.05 * scale;
@@ -155,8 +155,11 @@ function Importer({ levels, saveLevel, close }) {
         setScale(value);
         setOffsetX((offset) => offset - dx);
         setOffsetY((offset) => offset - dy);
+        */
         break;
       case 189:
+        //??? make zoom function
+        /*
         dw0 = scale * imageWidth;
         dh0 = scale * imageHeight;
         value = 0.95 * scale;
@@ -170,6 +173,7 @@ function Importer({ levels, saveLevel, close }) {
         setScale(value);
         setOffsetX((offset) => offset - dx);
         setOffsetY((offset) => offset - dy);
+        */
         break;
       default:
         handled = false;
@@ -203,11 +207,6 @@ function Importer({ levels, saveLevel, close }) {
 
     setCorners((c) => [...c.slice(0, cornerIndex), [x, y], ...c.slice(cornerIndex + 1)]);
     setCornerIndex((index) => (index < 3) ? index + 1 : 0);
-
-    const cols = getImageColors(x, y);
-    const ave = calcAverage(cols.filter((col) => col.light >= lightMin));
-    const piece = matchPiece(ave, true);
-    console.log(`${ave.hue} ${ave.sat} ${ave.light}  ${piece && piece.code}`);
   }
 
   function getImageColors(x, y) {
@@ -217,7 +216,8 @@ function Importer({ levels, saveLevel, close }) {
     for (let iy = y - size; iy <= y + size; iy++) {
       for (let ix = x - size; ix <= x + size; ix++) {
         colors.push(getImageColor(ix, iy));
-      } }
+      }
+    }
 
     return colors;
   }
@@ -237,16 +237,13 @@ function Importer({ levels, saveLevel, close }) {
     return rgbToColor({ red, green, blue });
   }
 
-  function matchPiece(color, useLog = false) {
+  function matchPiece(color) {
     if ((color.light < 40) && (color.light + color.sat < 60)) {
       return null;
     }
 
     let diff = Infinity;
     let match = {};
-    if (useLog) {
-      console.log('hue', color.hue, 'sat', color.sat, 'light', color.light);
-    }
     for (const piece of colorPieces) {
       const hueWeight = 2 * (color.sat / 100);
       const lightWeight = 2 * ((100 - color.sat) / 100);
@@ -258,12 +255,6 @@ function Importer({ levels, saveLevel, close }) {
         diff = total;
         match = piece;
       }
-      if (useLog) {
-        console.log(` ${piece.index}_${piece.code} (${total.toFixed(1)}) ${hueDiff.toFixed(1)} ${satDiff.toFixed(1)} ${lightDiff.toFixed(1)} [${hueWeight.toFixed(1)}, ${lightWeight.toFixed(1)}]`);
-      }
-    }
-    if (useLog) {
-      console.log('MATCH ', match.code, match.index);
     }
     return match;
   }
@@ -401,7 +392,7 @@ function Importer({ levels, saveLevel, close }) {
         </div>
         <div className={styles.bottomButtons}>
           <button onClick={handleLevelDec}>-</button>
-          <input 
+          <input
             type='number'
             min='0'
             max='162'

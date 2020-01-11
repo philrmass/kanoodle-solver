@@ -22,8 +22,8 @@ function ColorsDisplay({ colors, size, width }) {
       const background = `#${rgbToHex(color)}`;
       const colorStyle = { background };
       return (
-        <div 
-          key={index}
+        <div
+          key={index} // eslint-disable-line react/no-array-index-key
           id={`yo${index}`}
           className={styles.color}
           style={colorStyle}
