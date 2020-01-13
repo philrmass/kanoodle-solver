@@ -1,21 +1,24 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import pieces from '../data/pieces.json';
 import Board from './Board';
 import {
   pieceMax,
   oriMax,
   getBlankBoard,
-  //isBoardSolved,
-  //pickFirstBlankSpot,
+  verifyBoard,
+  isBoardSolved,
+  getBoardUnused,
+  pickFirstBlankSpot,
   canPlacePiece,
   placePiece,
-  verifyBoard,
   verifyPiece,
   verifyOri,
+  getSpotXY,
 } from '../utilities/game';
 import styles from '../styles/Solver.module.css';
 
-function Solver({ levels, close }) {
+function Solver({ levels, saveLevel, close }) {
   const levelMax = levels.length - 1;
   const keyCapture = useRef(null);
   const firstUnsolved = levels.findIndex((level) => !level.end);
@@ -52,13 +55,20 @@ function Solver({ levels, close }) {
   }
 
   function start() {
-    setIsSolving(true);
-    const step = {
-      board: [...board],
-      state: {},
-      last: null,
-    };
-    setSteps([step]);
+    if (verifyBoard(board)) {
+      const unused = getBoardUnused(board);
+      const step = {
+        board: [...board],
+        state: {
+          unused,
+          unusedIndex: 0,
+          usedSpots: [],
+        },
+        last: null,
+      };
+      setSteps([step]);
+      setIsSolving(true);
+    }
   }
 
   function stop() {
@@ -105,21 +115,52 @@ function Solver({ levels, close }) {
   }
 
   function solveBoard() {
-    const ok = verifyBoard(board);
-    console.log('SOLVE', ok); // eslint-disable-line no-console
+    const isSolved = isBoardSolved(board);
+    if (isSolved) {
+      const end = [...board];
+      saveLevel(level, { end });
+    }
   }
 
   function solveNext() {
-    console.log('NEXT'); // eslint-disable-line no-console
-    // find empty spot not already picked
-    // check all orientations of next piece until a piece fits
-    // if fits, add step and add to back of possibles
-    //   if solved, add to solutions
-    // if all possibilities are used, add to back of deadEnds
-    // ??? add solutions, deadEnds, possibles
+    const lastStep = steps[steps.length - 1];
+    //??? get step from possibles front instead
+    if (!lastStep) {
+      return;
+    }
+
+    console.log(`NEXT ${getSpotXY(spot)} `, lastStep); // eslint-disable-line no-console
+    const state = lastStep.state;
+    const spot = pickFirstBlankSpot(board, state.usedSpots);
+    const piece = state.unused[0];
+    const oris = pieces[piece].orientations;
+    let placed = false;
+    for (let i = 0; i < oris.length && !placed; i++) {
+      const ori = oris[i];
+      if (canPlacePiece(piece, ori, spot, board)) {
+        console.log('can place', piece, ori, 'at', spot); // eslint-disable-line no-console
+        setBoard(placePiece(piece, ori, spot, board));
+        placed = true;
+      } else {
+        console.log('  try', piece, ori, 'at', spot); // eslint-disable-line no-console
+      }
+    }
+
+    //??? remove piece from unused
+
+    if (placed) {
+      console.log('PLACED', piece, 'at', spot); // eslint-disable-line no-console
+      //??? create a step with last, etc.
+      //??? add step to steps
+      //??? add to possibles or solutions
+    } else {
+      console.log('NOT-PLACED', piece, 'at', spot); // eslint-disable-line no-console
+      //??? get next piece
+      //??? if no next piece, add to deadEnds
+    }
+
     /*
     {
-      setIsSolving(true);
       const step = {
         board: [...board],
         state: {},
@@ -164,7 +205,7 @@ function Solver({ levels, close }) {
             min='0'
             max={pieceMax}
             value={piece}
-            onChange={(e) => setPiece(verifyPiece(e.target.value))}
+            onChange={(e) => setPiece(verifyPiece(parseInt(e.target.value)))}
           />
           <span>Orientation</span>
           <input
@@ -178,6 +219,7 @@ function Solver({ levels, close }) {
         <div className={styles.bottomButtons}>
           <button onClick={solveBoard}>Solve</button>
           <button onClick={solveNext}>Next</button>
+          <span>{levels[level].end ? 'Solved' : ''}</span>
         </div>
       </section>
     </Fragment>
@@ -186,6 +228,7 @@ function Solver({ levels, close }) {
 
 Solver.propTypes = {
   levels: PropTypes.arrayOf(PropTypes.object).isRequired,
+  saveLevel: PropTypes.func,
   close: PropTypes.func.isRequired,
 };
 

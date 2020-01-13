@@ -293,7 +293,8 @@ function Importer({ levels, saveLevel, close }) {
   }
 
   function handleLevelSave() {
-    saveLevel(levelIndex, board);
+    const start = [...board];
+    saveLevel(levelIndex, { start });
   }
 
   function verifyImage(fileOrBlob) {

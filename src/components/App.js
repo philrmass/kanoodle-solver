@@ -18,14 +18,13 @@ function App() {
     e.preventDefault();
   }
 
-  function saveLevel(index, data) {
-    const level = {
-      level: index,
-      start: data,
+  function saveLevel(level, data) {
+    const levelData = {
+      level,
+      ...levels[level],
+      ...data,
     };
-    const lvls = [...levels];
-    lvls[index] = level;
-    setLevels(lvls);
+    setLevels([...levels.slice(0, level), levelData, ...levels.slice(level + 1)]);
   }
 
   function exportLevels() {
@@ -51,6 +50,7 @@ function App() {
         { display === 'solver' &&
           <Solver
             levels={levels}
+            saveLevel={saveLevel}
             close={() => setDisplay(null)}
           />
         }

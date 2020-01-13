@@ -58,7 +58,6 @@
     "operator-linebreak": "warn",
     "quote-props": [ "warn", "as-needed" ],
     "quotes": [ "error", "single", { "avoidEscape": true } ],
-    "radix": "error",
     "react/jsx-indent": [ "error", 2 ],
     "react/jsx-key": "error",
     "react/jsx-no-target-blank": "error",

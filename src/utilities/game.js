@@ -12,27 +12,48 @@ export function getBlankBoard() {
 }
 
 export function verifyBoard(board) {
-  const counts = board.reduce((counts, spot) => {
+  const counts = getBoardPieceCounts(board);
+  const pieceCounts = pieces.map((piece) => piece.dots.length);
+
+  return counts.every((count, index) => count === 0 || count === pieceCounts[index]);
+}
+
+export function isBoardSolved(board) {
+  const counts = getBoardPieceCounts(board);
+  const pieceCounts = pieces.map((piece) => piece.dots.length);
+
+  return counts.every((count, index) => count === pieceCounts[index]);
+}
+
+export function getBoardUnused(board) {
+  const counts = getBoardPieceCounts(board);
+  return counts.reduce((unused, count, index) => {
+    if (count === 0) {
+      return [...unused, index];
+    }
+    return unused;
+  }, []);
+}
+
+function getBoardPieceCounts(board) {
+  return board.reduce((counts, spot) => {
     if (spot > -1 && spot < counts.length) {
       counts[spot] = counts[spot] + 1;
     }
     return counts;
   }, new Array(12).fill(0));
-
-  return counts.every((count, index) => {
-    const pieceCount = pieces[index].dots.length;
-    return count === pieceCount || count === 0;
-  });
-}
-
-export function isBoardSolved(board) {
-  console.error('isBoardSolved', board); // eslint-disable-line no-console
-  return false;
 }
 
 export function pickFirstBlankSpot(board, excludedSpots = []) {
-  console.error('pickFirstBlankSpot', board, excludedSpots); // eslint-disable-line no-console
-  return 0;
+  for (let x = 0; x < boardColumns; x++) {
+    for (let y = boardRows - 1; y >= 0; y--) {
+      const spot = getSpot(x, y);
+      if (board[spot] < 0 && !excludedSpots.includes(spot)) {
+        return spot;
+      }
+    }
+  }
+  return -1;
 }
 
 export function canPlacePiece(piece, ori, spot, board) {
@@ -77,7 +98,7 @@ function canPlaceDots(dots, spot, board) {
     const x = spotX + dot[0];
     const y = spotY + dot[1];
     const inBounds = (x >= 0 && x < boardColumns && y >= 0 && y < boardRows);
-    const dotSpot = (y * boardColumns) + x;
+    const dotSpot = getSpot(x, y);
     return inBounds && (board[dotSpot] === -1);
   });
 }
@@ -88,13 +109,20 @@ function placeDots(dots, piece, spot, board) {
   for (const dot of dots) {
     const x = spotX + dot[0];
     const y = spotY + dot[1];
-    const spot = (y * boardColumns) + x;
+    const spot = getSpot(x, y);
     placed[spot] = piece;
   }
   return placed;
 }
 
-function getSpotXY(spot) {
+function getSpot(x, y) {
+  return (y * boardColumns) + x;
+}
+
+export function getSpotXY(spot) {
+  if (spot < 0) {
+    return [-1, -1];
+  }
   const spotY = Math.floor(spot / boardColumns);
   const spotX = spot - (spotY * boardColumns);
   return [spotX, spotY];
