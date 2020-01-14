@@ -131,32 +131,40 @@ function Solver({ levels, saveLevel, close }) {
 
     console.log(`NEXT ${getSpotXY(spot)} `, lastStep); // eslint-disable-line no-console
     const state = lastStep.state;
-    const spot = pickFirstBlankSpot(board, state.usedSpots);
-    const piece = state.unused[0];
-    const oris = pieces[piece].orientations;
+    let spot = pickFirstBlankSpot(board, state.usedSpots);
     let placed = false;
-    for (let i = 0; i < oris.length && !placed; i++) {
-      const ori = oris[i];
-      if (canPlacePiece(piece, ori, spot, board)) {
-        console.log('can place', piece, ori, 'at', spot); // eslint-disable-line no-console
-        setBoard(placePiece(piece, ori, spot, board));
-        placed = true;
-      } else {
-        console.log('  try', piece, ori, 'at', spot); // eslint-disable-line no-console
+
+    while (spot >= 0 && !placed) {
+      const piece = state.unused[0];
+      const oris = pieces[piece].orientations;
+
+      for (let i = 0; i < oris.length && !placed; i++) {
+        const ori = oris[i];
+        if (canPlacePiece(piece, ori, spot, board)) {
+          console.log('can place', piece, ori, 'at', spot); // eslint-disable-line no-console
+          setBoard(placePiece(piece, ori, spot, board));
+          placed = true;
+        } else {
+          console.log('  try', piece, ori, 'at', spot); // eslint-disable-line no-console
+        }
       }
-    }
 
-    //??? remove piece from unused
+      //??? remove piece from unused
 
-    if (placed) {
-      console.log('PLACED', piece, 'at', spot); // eslint-disable-line no-console
-      //??? create a step with last, etc.
-      //??? add step to steps
-      //??? add to possibles or solutions
-    } else {
-      console.log('NOT-PLACED', piece, 'at', spot); // eslint-disable-line no-console
-      //??? get next piece
-      //??? if no next piece, add to deadEnds
+      if (placed) {
+        console.log('PLACED', piece, 'at', spot); // eslint-disable-line no-console
+        //??? create a step with last, etc.
+        //??? add step to steps
+        //??? add to possibles or solutions
+      } else {
+        console.log('NOT-PLACED', piece, 'at', spot); // eslint-disable-line no-console
+        //??? get next piece
+        //??? if no next piece, add to deadEnds
+
+        state.usedSpots.push(spot);
+        spot = pickFirstBlankSpot(board, state.usedSpots);
+        console.log(' NEXT-SPOT', spot, state.usedSpots); // eslint-disable-line no-console
+      }
     }
 
     /*
@@ -191,8 +199,6 @@ function Solver({ levels, saveLevel, close }) {
           />
           <button disabled={isSolving} onClick={() => handleLevel(level + 1)}>+</button>
           <button disabled={isSolving} onClick={clearBoard}>Clear</button>
-          <button disabled={isSolving} onClick={start}>Start</button>
-          <button disabled={!isSolving} onClick={stop}>Stop</button>
         </div>
         <Board
           board={board}
@@ -217,8 +223,10 @@ function Solver({ levels, saveLevel, close }) {
           />
         </div>
         <div className={styles.bottomButtons}>
-          <button onClick={solveBoard}>Solve</button>
+          <button disabled={isSolving} onClick={start}>Start</button>
+          <button disabled={!isSolving} onClick={stop}>Stop</button>
           <button onClick={solveNext}>Next</button>
+          <button onClick={solveBoard}>Save</button>
           <span>{levels[level].end ? 'Solved' : ''}</span>
         </div>
       </section>
