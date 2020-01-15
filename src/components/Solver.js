@@ -69,18 +69,17 @@ function Solver({ levels, saveLevel, close }) {
     setLogged('');
   }
 
+  function createStep(board, last) {
+    return {
+      board: [...board],
+      state: {},
+      last,
+    };
+  }
+
   function addFirstStep() {
     if (verifyBoard(board)) {
-      const unused = getBoardUnused(board);
-      const step = {
-        board: [...board],
-        state: {
-          unused,
-          unusedIndex: 0,
-          usedSpots: [],
-        },
-        last: null,
-      };
+      const step = createStep(board, null);
       addStep(step);
       setPossibles([step]);
       setDeadEnds([]);
@@ -123,12 +122,12 @@ function Solver({ levels, saveLevel, close }) {
   }
 
   function log(...args) {
-    setLogged((log) => {
+    setLogged((logged) => {
       for (const arg of args) {
-        log += `${arg} `;
+        logged += typeof arg === 'object' ? `${JSON.stringify(arg)} ` : `${arg} `;
       }
-      log += '\n';
-      return log;
+      logged += '\n';
+      return logged;
     });
   }
 
@@ -152,38 +151,42 @@ function Solver({ levels, saveLevel, close }) {
 
   function stepA() {
     if (steps.length === 0) {
+      log('FIRST');
       addFirstStep();
       return;
     }
 
     const possible = possibles.shift();
     if (!possible) {
-      log('DONE'); // eslint-disable-line no-console
+      log('DONE');
       return;
     }
 
+    const board = possible.board;
+    const unused = getBoardUnused(board);
     const state = possible.state;
-    let spot = pickFirstBlankSpot(board, state.usedSpots);
-    log(`NEXT ${spot} => ${getSpotXY(spot)}`, state); // eslint-disable-line no-console
-    let placed = false;
+    const usedSpots = [];
+    let next;
 
-    while (spot >= 0 && !placed) {
-      const piece = state.unused.shift();
+    let piece = unused.shift();
+    let spot = pickFirstBlankSpot(board, usedSpots);
+    log(`STEP ${piece} at ${getSpotXY(spot)} (${spot})`);
+
+    while (spot >= 0 && !next) {
       const oris = pieces[piece].orientations;
 
-      for (let i = 0; i < oris.length && !placed; i++) {
+      for (let i = 0; i < oris.length && !next; i++) {
         const ori = oris[i];
         if (canPlacePiece(piece, ori, spot, board)) {
-          log('can place', piece, ori, 'at', spot); // eslint-disable-line no-console
-          setBoard(placePiece(piece, ori, spot, board));
-          placed = true;
-        } else {
-          log('  try', piece, ori, 'at', spot); // eslint-disable-line no-console
+          log(` place ${piece}o${ori}`);
+          next = createStep(placePiece(piece, ori, spot, board), possible);
+          setBoard(next.board);
         }
       }
 
-      if (placed) {
-        log('PLACED', piece, 'at', spot); // eslint-disable-line no-console
+      if (next) {
+        log(' placed', next);
+        //addStep();
         //setPossibles([]);
         //setDeadEnds([]);
         //setSolutions([]);
@@ -200,17 +203,6 @@ function Solver({ levels, saveLevel, close }) {
         //??? if no next piece, add to deadEnds
       }
     }
-
-    /*
-    {
-      const step = {
-        board: [...board],
-        state: {},
-        last: null,
-      };
-      setSteps([step]);
-    }
-    */
   }
 
   return (
