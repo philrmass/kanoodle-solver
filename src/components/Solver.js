@@ -61,7 +61,9 @@ function Solver({ levels, saveLevel, close }) {
   }
 
   function reset() {
-    setBoard(levels[level].start);
+    const firstUnsolved = levels.findIndex((level) => !level.end) || 0;
+    setLevel(firstUnsolved); 
+    setBoard(levels[firstUnsolved].start);
     setSteps([]);
     setPossibles([]);
     setDeadEnds([]);
@@ -158,7 +160,6 @@ function Solver({ levels, saveLevel, close }) {
 
     const possible = possibles.shift();
     if (!possible) {
-      log('DONE');
       return;
     }
 
@@ -170,37 +171,40 @@ function Solver({ levels, saveLevel, close }) {
 
     let piece = unused.shift();
     let spot = pickFirstBlankSpot(board, usedSpots);
-    log(`STEP ${piece} at ${getSpotXY(spot)} (${spot})`);
+    log('STEP');
 
     while (spot >= 0 && !next) {
+      log(`  try ${piece} at ${getSpotXY(spot)} (${spot})`);
       const oris = pieces[piece].orientations;
 
       for (let i = 0; i < oris.length && !next; i++) {
         const ori = oris[i];
         if (canPlacePiece(piece, ori, spot, board)) {
-          log(` place ${piece}o${ori}`);
+          log(`    place ori ${ori}`);
           next = createStep(placePiece(piece, ori, spot, board), possible);
           setBoard(next.board);
         }
       }
 
       if (next) {
-        log(' placed', next);
-        //addStep();
-        //setPossibles([]);
-        //setDeadEnds([]);
-        //setSolutions([]);
-        //??? create a step with last, etc.
-        //??? add step to steps
-        //??? add to possibles or solutions
+        addStep(next);
+        if (isBoardSolved(next.board)) {
+          setSolutions((s) => [...s, next]);
+          log('SOLVED');
+        } else {
+          setPossibles((p) => [...p, next]);
+        }
       } else {
-        log('NOT-PLACED', piece, 'at', spot); // eslint-disable-line no-console
-        state.usedSpots.push(spot);
-        spot = pickFirstBlankSpot(board, state.usedSpots);
-        log(' NEXT-SPOT', getSpotXY(spot), state.usedSpots); // eslint-disable-line no-console
+        usedSpots.push(spot);
+        spot = pickFirstBlankSpot(board, usedSpots);
 
-        //??? if no spots, get next piece
-        //??? if no next piece, add to deadEnds
+        if (spot < 0) {
+          log('!!NO-SPOTS!!');
+          //??? if no spots, get next piece
+          //??? if no next piece, add to deadEnds
+          //setDeadEnds([]);
+          return;
+        }
       }
     }
   }

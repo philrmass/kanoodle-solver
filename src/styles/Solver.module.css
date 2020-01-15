@@ -11,6 +11,7 @@
 
 .log {
   white-space: pre;
-  font-size: 14px;
   color: var(--text-log);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
 }
