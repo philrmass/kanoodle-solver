@@ -22,13 +22,19 @@ function Solver({ levels, saveLevel, close }) {
   const levelMax = levels.length - 1;
   const keyCapture = useRef(null);
   const firstUnsolved = levels.findIndex((level) => !level.end);
+
   const [level, setLevel] = useState(firstUnsolved);
   const [piece, setPiece] = useState(0);
   const [ori, setOri] = useState(0);
   const [spot, setSpot] = useState(null);
   const [board, setBoard] = useState(levels[level].start);
-  const [isSolving, setIsSolving] = useState(false);
   const [steps, setSteps] = useState([]);
+  const [possibles, setPossibles] = useState([]);
+  const [deadEnds, setDeadEnds] = useState([]);
+  const [solutions, setSolutions] = useState([]);
+  const [logged, setLogged] = useState('');
+
+  const isSolving = (steps.length > 0);
 
   useEffect(() => {
     showOnBoard(piece, ori, spot, steps);
@@ -54,7 +60,16 @@ function Solver({ levels, saveLevel, close }) {
     setBoard(getBlankBoard());
   }
 
-  function start() {
+  function reset() {
+    setBoard(levels[level].start);
+    setSteps([]);
+    setPossibles([]);
+    setDeadEnds([]);
+    setSolutions([]);
+    setLogged('');
+  }
+
+  function addFirstStep() {
     if (verifyBoard(board)) {
       const unused = getBoardUnused(board);
       const step = {
@@ -66,13 +81,15 @@ function Solver({ levels, saveLevel, close }) {
         },
         last: null,
       };
-      setSteps([step]);
-      setIsSolving(true);
+      addStep(step);
+      setPossibles([step]);
+      setDeadEnds([]);
+      setSolutions([]);
     }
   }
 
-  function stop() {
-    setIsSolving(false);
+  function addStep(step) {
+    setSteps((steps) => [...steps, step]);
   }
 
   function handleKeyDown(e) {
@@ -105,6 +122,16 @@ function Solver({ levels, saveLevel, close }) {
     }
   }
 
+  function log(...args) {
+    setLogged((log) => {
+      for (const arg of args) {
+        log += `${arg} `;
+      }
+      log += '\n';
+      return log;
+    });
+  }
+
   function showOnBoard(piece, ori, spot, steps) {
     if (spot && steps.length > 0) {
       const brd = steps[steps.length - 1].board;
@@ -114,7 +141,8 @@ function Solver({ levels, saveLevel, close }) {
     }
   }
 
-  function solveBoard() {
+  function saveSolution() {
+    //??? change to get solution from solutions
     const isSolved = isBoardSolved(board);
     if (isSolved) {
       const end = [...board];
@@ -122,48 +150,54 @@ function Solver({ levels, saveLevel, close }) {
     }
   }
 
-  function solveNext() {
-    const lastStep = steps[steps.length - 1];
-    //??? get step from possibles front instead
-    if (!lastStep) {
+  function stepA() {
+    if (steps.length === 0) {
+      addFirstStep();
       return;
     }
 
-    console.log(`NEXT ${getSpotXY(spot)} `, lastStep); // eslint-disable-line no-console
-    const state = lastStep.state;
+    const possible = possibles.shift();
+    if (!possible) {
+      log('DONE'); // eslint-disable-line no-console
+      return;
+    }
+
+    const state = possible.state;
     let spot = pickFirstBlankSpot(board, state.usedSpots);
+    log(`NEXT ${spot} => ${getSpotXY(spot)}`, state); // eslint-disable-line no-console
     let placed = false;
 
     while (spot >= 0 && !placed) {
-      const piece = state.unused[0];
+      const piece = state.unused.shift();
       const oris = pieces[piece].orientations;
 
       for (let i = 0; i < oris.length && !placed; i++) {
         const ori = oris[i];
         if (canPlacePiece(piece, ori, spot, board)) {
-          console.log('can place', piece, ori, 'at', spot); // eslint-disable-line no-console
+          log('can place', piece, ori, 'at', spot); // eslint-disable-line no-console
           setBoard(placePiece(piece, ori, spot, board));
           placed = true;
         } else {
-          console.log('  try', piece, ori, 'at', spot); // eslint-disable-line no-console
+          log('  try', piece, ori, 'at', spot); // eslint-disable-line no-console
         }
       }
 
-      //??? remove piece from unused
-
       if (placed) {
-        console.log('PLACED', piece, 'at', spot); // eslint-disable-line no-console
+        log('PLACED', piece, 'at', spot); // eslint-disable-line no-console
+        //setPossibles([]);
+        //setDeadEnds([]);
+        //setSolutions([]);
         //??? create a step with last, etc.
         //??? add step to steps
         //??? add to possibles or solutions
       } else {
-        console.log('NOT-PLACED', piece, 'at', spot); // eslint-disable-line no-console
-        //??? get next piece
-        //??? if no next piece, add to deadEnds
-
+        log('NOT-PLACED', piece, 'at', spot); // eslint-disable-line no-console
         state.usedSpots.push(spot);
         spot = pickFirstBlankSpot(board, state.usedSpots);
-        console.log(' NEXT-SPOT', spot, state.usedSpots); // eslint-disable-line no-console
+        log(' NEXT-SPOT', getSpotXY(spot), state.usedSpots); // eslint-disable-line no-console
+
+        //??? if no spots, get next piece
+        //??? if no next piece, add to deadEnds
       }
     }
 
@@ -186,7 +220,7 @@ function Solver({ levels, saveLevel, close }) {
         ref={keyCapture}
         onKeyDown={handleKeyDown}
       >
-        <div className={styles.topButtons}>
+        <div className={styles.buttonRow}>
           <button onClick={close}>Close</button>
           <button disabled={isSolving} onClick={() => handleLevel(level - 1)}>-</button>
           <input
@@ -199,12 +233,9 @@ function Solver({ levels, saveLevel, close }) {
           />
           <button disabled={isSolving} onClick={() => handleLevel(level + 1)}>+</button>
           <button disabled={isSolving} onClick={clearBoard}>Clear</button>
+          <div>{levels[level].end ? 'Solved' : 'Unsolved'}</div>
         </div>
-        <Board
-          board={board}
-          pickSpot={setSpot}
-        />
-        <div className={styles.bottomButtons}>
+        <div className={styles.buttonRow}>
           <span>Piece</span>
           <input
             type='number'
@@ -222,12 +253,22 @@ function Solver({ levels, saveLevel, close }) {
             onChange={(e) => setOri(verifyOri(e.target.value))}
           />
         </div>
-        <div className={styles.bottomButtons}>
-          <button disabled={isSolving} onClick={start}>Start</button>
-          <button disabled={!isSolving} onClick={stop}>Stop</button>
-          <button onClick={solveNext}>Next</button>
-          <button onClick={solveBoard}>Save</button>
-          <span>{levels[level].end ? 'Solved' : ''}</span>
+        <Board
+          board={board}
+          pickSpot={setSpot}
+        />
+        <div className={styles.buttonRow}>
+          <span>{`${possibles.length} Possibles`}</span>
+          <span>{`${deadEnds.length} Dead Ends`}</span>
+          <span>{`${solutions.length} Solutions`}</span>
+          <button onClick={saveSolution}>Save</button>
+          <button onClick={reset}>Reset</button>
+        </div>
+        <div className={styles.buttonRow}>
+          <button onClick={stepA}>Step A</button>
+        </div>
+        <div className={styles.log} onDoubleClick={() => setLogged('')}>
+          {logged}
         </div>
       </section>
     </Fragment>
