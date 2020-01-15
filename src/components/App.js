@@ -19,13 +19,13 @@ function App() {
   }
 
   function saveLevel(level, data) {
+    const index = parseInt(level);
     const levelData = {
-      ...levels[level],
-      level: parseInt(level),
+      level: index,
+      ...levels[index],
       ...data,
     };
-    console.log('SAVE', level, data, levelData);
-    setLevels([...levels.slice(0, level), levelData, ...levels.slice(level + 1)]);
+    setLevels((levels) => [...levels.slice(0, index), levelData, ...levels.slice(index + 1)]);
   }
 
   function exportLevels() {
