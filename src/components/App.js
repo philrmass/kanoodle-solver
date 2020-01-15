@@ -20,10 +20,11 @@ function App() {
 
   function saveLevel(level, data) {
     const levelData = {
-      level,
       ...levels[level],
+      level: parseInt(level),
       ...data,
     };
+    console.log('SAVE', level, data, levelData);
     setLevels([...levels.slice(0, level), levelData, ...levels.slice(level + 1)]);
   }
 

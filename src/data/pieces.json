@@ -3,7 +3,7 @@
     "index": 0,
     "code": "L",
     "dots": [[0, 0], [1, 0], [2, 0], [1, 1], [1, -1]],
-    "orientations": [0, 2, 4, 6],
+    "orientations": [0, 1, 2, 3],
     "name": "gray",
     "color": "cfc4b2",
     "matchColor": "828883"
@@ -75,7 +75,7 @@
     "index": 8,
     "code": "K",
     "dots": [[0, 0], [1, 0], [0, 1], [1, 1]],
-    "orientations": [0, 2, 4, 6],
+    "orientations": [0, 1, 2, 3],
     "name": "light green",
     "color": "abe64c",
     "matchColor": "adc304"
@@ -93,7 +93,7 @@
     "index": 10,
     "code": "J",
     "dots": [[0, 0], [1, 0], [2, 0], [3, 0]],
-    "orientations": [0, 2, 4, 6],
+    "orientations": [0, 1, 2, 3],
     "name": "purple",
     "color": "925abb",
     "matchColor": "8d265c"

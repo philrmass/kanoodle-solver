@@ -22,6 +22,8 @@ function Solver({ levels, saveLevel, close }) {
   const levelMax = levels.length - 1;
   const keyCapture = useRef(null);
   const firstUnsolved = levels.findIndex((level) => !level.end);
+  const solvedCount = levels.reduce((cnt, l) => l.end ? cnt + 1 : cnt, 0);
+  const unsolvedCount = levels.reduce((cnt, l) => l.end ? cnt : cnt + 1, 0);
 
   const [level, setLevel] = useState(firstUnsolved);
   const [piece, setPiece] = useState(0);
@@ -143,7 +145,7 @@ function Solver({ levels, saveLevel, close }) {
   }
 
   function saveSolution() {
-    //??? change to get solution from solutions
+    //??? change to save first solution from solutions
     const isSolved = isBoardSolved(board);
     if (isSolved) {
       const end = [...board];
@@ -165,7 +167,7 @@ function Solver({ levels, saveLevel, close }) {
 
     const board = possible.board;
     const unused = getBoardUnused(board);
-    const state = possible.state;
+    console.log('UN', unused);
     const usedSpots = [];
     let next;
 
@@ -229,7 +231,7 @@ function Solver({ levels, saveLevel, close }) {
           />
           <button disabled={isSolving} onClick={() => handleLevel(level + 1)}>+</button>
           <button disabled={isSolving} onClick={clearBoard}>Clear</button>
-          <div>{levels[level].end ? 'Solved' : 'Unsolved'}</div>
+          <div>{`${levels[level].end ? 'Solved' : 'Unsolved'} (${solvedCount}, ${unsolvedCount})`}</div>
         </div>
         <div className={styles.buttonRow}>
           <span>Piece</span>
