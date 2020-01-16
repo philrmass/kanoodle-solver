@@ -1,19 +1,23 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-//import Board from './Board';
+import Board from './Board';
 import styles from '../styles/StepsModal.module.css';
 
 function StepsModal({ steps, close }) {
+  function buildBoards() {
+    return steps.map((step) => (
+      <Board
+        key={`${step.board}`}
+        board={step.board}
+      />
+    ));
+  }
+
   return (
     <div className={styles.main}>
       <div className={styles.modal}>
         <div className={styles.content}>
-          {`Steps ${steps.length} steps`}
-          {/*
-          <Board
-            board={steps[0].board}
-          />
-          */}
+          {buildBoards()}
           <div className={styles.buttonRow}>
             <button onClick={close}>Close</button>
           </div>

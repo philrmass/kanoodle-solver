@@ -66,7 +66,7 @@ function Solver({ levels, saveLevel, close }) {
 
   function reset() {
     const firstUnsolved = levels.findIndex((level) => !level.end) || 0;
-    setLevel(firstUnsolved); 
+    setLevel(firstUnsolved);
     setBoard(levels[firstUnsolved].start);
     setSteps([]);
     setPossibles([]);
@@ -128,13 +128,11 @@ function Solver({ levels, saveLevel, close }) {
   }
 
   function log(...args) {
-    setLogged((logged) => {
-      for (const arg of args) {
-        logged += typeof arg === 'object' ? `${JSON.stringify(arg)} ` : `${arg} `;
-      }
-      logged += '\n';
-      return logged;
-    });
+    const text = args.reduce((text, arg) => {
+      text += typeof arg === 'object' ? `${JSON.stringify(arg)} ` : `${arg} `;
+      return text;
+    }, '');
+    setLogged((logged) => logged + text + '\n');
   }
 
   function showOnBoard(piece, ori, spot, steps) {
@@ -147,10 +145,10 @@ function Solver({ levels, saveLevel, close }) {
   }
 
   function saveSolution() {
-    //??? change to save first solution from solutions
-    const isSolved = isBoardSolved(board);
+    const solved = solutions[0].board;
+    const isSolved = isBoardSolved(solved);
     if (isSolved) {
-      const end = [...board];
+      const end = [...solved];
       saveLevel(level, { end });
     }
   }
@@ -169,13 +167,12 @@ function Solver({ levels, saveLevel, close }) {
 
     const board = possible.board;
     const unused = getBoardUnused(board);
-    console.log('UN', unused);
     const usedSpots = [];
     let next;
 
+    log('STEP', unused);
     let piece = unused.shift();
     let spot = pickFirstBlankSpot(board, usedSpots);
-    log('STEP');
 
     while (spot >= 0 && !next) {
       log(`  try ${piece} at ${getSpotXY(spot)} (${spot})`);
@@ -281,7 +278,7 @@ function Solver({ levels, saveLevel, close }) {
           {buildStepsLink(possibles, 'Possibles')}
           {buildStepsLink(deadEnds, 'Dead Ends')}
           {buildStepsLink(solutions, 'Solutions')}
-          <button onClick={saveSolution}>Save</button>
+          <button onClick={saveSolution} disabled={solutions.length === 0}>Save</button>
           <button onClick={reset}>Reset</button>
         </div>
         <div className={styles.buttonRow}>

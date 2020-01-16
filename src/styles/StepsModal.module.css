@@ -15,6 +15,7 @@
   border-radius: 4px;
   margin: 8px;
   background: var(--bg-dark);
+  width: 90%;
 }
 
 .content {
