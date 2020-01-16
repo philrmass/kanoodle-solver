@@ -2,6 +2,7 @@ import React, { Fragment, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import pieces from '../data/pieces.json';
 import Board from './Board';
+import StepsModal from './StepsModal';
 import {
   pieceMax,
   oriMax,
@@ -34,6 +35,7 @@ function Solver({ levels, saveLevel, close }) {
   const [possibles, setPossibles] = useState([]);
   const [deadEnds, setDeadEnds] = useState([]);
   const [solutions, setSolutions] = useState([]);
+  const [modalSteps, setModalSteps] = useState([]);
   const [logged, setLogged] = useState('');
 
   const isSolving = (steps.length > 0);
@@ -211,6 +213,26 @@ function Solver({ levels, saveLevel, close }) {
     }
   }
 
+  function buildStepsLink(steps, label) {
+    const text = `${steps.length} ${label}`;
+    if (steps.length === 0) {
+      return (<span>{text}</span>);
+    }
+    return (<button className={styles.link} onClick={() => setModalSteps(steps)}>{text}</button>);
+  }
+
+  function buildStepsModal() {
+    if (modalSteps.length === 0) {
+      return null;
+    }
+    return (
+      <StepsModal
+        steps={modalSteps}
+        close={() => setModalSteps([])}
+      />
+    );
+  }
+
   return (
     <Fragment>
       <section
@@ -256,9 +278,9 @@ function Solver({ levels, saveLevel, close }) {
           pickSpot={setSpot}
         />
         <div className={styles.buttonRow}>
-          <span>{`${possibles.length} Possibles`}</span>
-          <span>{`${deadEnds.length} Dead Ends`}</span>
-          <span>{`${solutions.length} Solutions`}</span>
+          {buildStepsLink(possibles, 'Possibles')}
+          {buildStepsLink(deadEnds, 'Dead Ends')}
+          {buildStepsLink(solutions, 'Solutions')}
           <button onClick={saveSolution}>Save</button>
           <button onClick={reset}>Reset</button>
         </div>
@@ -269,6 +291,7 @@ function Solver({ levels, saveLevel, close }) {
           {logged}
         </div>
       </section>
+      {buildStepsModal()}
     </Fragment>
   );
 }

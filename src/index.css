@@ -2,8 +2,10 @@
   --text-light: #e8e8e8;
   --text-log: #989898;
   --text-active: #fff840;
+  --text-link: #40d8e8;
   --bg-dark: #383838;
   --bg-mid: #606060;
+  --bg-overlay: #ffffff30;
   --disabled-bg: #707070;
   --disabled-fg: #909090;
   --border: #a0a0a0;

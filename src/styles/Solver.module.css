@@ -15,3 +15,10 @@
   font-family: 'Courier New', Courier, monospace;
   font-size: 14px;
 }
+
+.link {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-link);
+}

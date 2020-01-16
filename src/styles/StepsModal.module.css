@@ -1,0 +1,33 @@
+.main {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  background: var(--bg-overlay);
+}
+
+.modal {
+  padding: 8px;
+  border-radius: 4px;
+  margin: 8px;
+  background: var(--bg-dark);
+}
+
+.content {
+  padding: 8px;
+}
+
+.buttonRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.buttonRow > * {
+  margin-left: 8px;
+}
