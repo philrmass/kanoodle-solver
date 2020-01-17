@@ -26,18 +26,6 @@ export function isBoardSolved(board) {
 }
 
 export function boardsMatch(board0, board1) {
-  if (board0.length !== board1.length) {
-    return false;
-  }
-  for (let i = 0; i < board0.length; i++) {
-    if (board0[i] !== board1[i]) {
-      return false;
-    }
-  }
-  return true;
-}
-
-export function boardsMatch0(board0, board1) {
   return board0.every((item, i) => item === board1[i]);
 }
 

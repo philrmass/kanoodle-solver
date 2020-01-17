@@ -8,7 +8,7 @@ import {
   oriMax,
   getBlankBoard,
   isBoardSolved,
-  boardsMatch0,
+  boardsMatch,
   getBoardUnused,
   pickFirstBlankSpot,
   canPlacePiece,
@@ -25,7 +25,7 @@ function Solver({ levels, saveLevel, close }) {
   const solvedCount = levels.reduce((cnt, l) => l.end ? cnt + 1 : cnt, 0);
   const unsolvedCount = levels.reduce((cnt, l) => l.end ? cnt : cnt + 1, 0);
 
-  const [level, setLevel] = useState(firstUnsolved);
+  const [level, setLevel] = useState(0);//firstUnsolved || 0);
   const [piece, setPiece] = useState(0);
   const [ori, setOri] = useState(0);
   const [spot, setSpot] = useState(null);
@@ -34,8 +34,8 @@ function Solver({ levels, saveLevel, close }) {
   const [possibles, setPossibles] = useState([]);
   const [deadEnds, setDeadEnds] = useState([]);
   const [solutions, setSolutions] = useState([]);
-  const [duplicates, setDuplicates] = useState(0);
-  const [deadDuplicates, setDeadDuplicates] = useState(0);
+  const [uniqueSolutions, setUniqueSolutions] = useState(0);
+  const [uniqueDeadEnds, setUniqueDeadEnds] = useState(0);
   const [modalSteps, setModalSteps] = useState([]);
   const [logged, setLogged] = useState('');
 
@@ -77,8 +77,8 @@ function Solver({ levels, saveLevel, close }) {
     setPossibles([]);
     setDeadEnds([]);
     setSolutions([]);
-    setDuplicates(0);
-    setDeadDuplicates(0);
+    setUniqueSolutions(0);
+    setUniqueDeadEnds(0);
     setLogged('');
   }
 
@@ -94,12 +94,12 @@ function Solver({ levels, saveLevel, close }) {
     setSteps((steps) => [...steps, step]);
     if (isBoardSolved(step.board)) {
       setSolutions((steps) => {
-        const found = steps.find((s) => boardsMatch0(s.board, step.board));
+        const found = steps.find((s) => boardsMatch(s.board, step.board));
         if (!found) {
           log('  SOLVED');
           return [...steps, step];
         }
-        setDuplicates((d) => d + 1);
+        setUniqueSolutions((d) => d + 1);
         return steps;
       });
     } else {
@@ -109,11 +109,11 @@ function Solver({ levels, saveLevel, close }) {
 
   function addInvalidStep(step) {
     setDeadEnds((steps) => {
-      const found = steps.find((s) => boardsMatch0(s.board, step.board));
+      const found = steps.find((s) => boardsMatch(s.board, step.board));
       if (!found) {
         return [...steps, step];
       }
-      setDeadDuplicates((d) => d + 1);
+      setUniqueDeadEnds((d) => d + 1);
       return steps;
     });
   }
@@ -178,24 +178,60 @@ function Solver({ levels, saveLevel, close }) {
   }
 
   function stepA() {
+    const starts = [...possibles];
     if (steps.length === 0) {
-      log('FIRST', getBoardUnused(board));
-      addValidStep(createStep(board, null));
-      return;
+      starts.push(createStep(board, null));
+      log('START', getBoardUnused(board));
     }
 
-    const possible = possibles.shift();
-    if (possible) {
-      const valids = algorithmA(possible);
-      if (valids.length > 0) {
-        for (const valid of valids) {
-          addValidStep(valid);
+    if (starts.length > 0) {
+      log('  STEP', starts.length);
+      let valids = [];
+      const invalids = [];
+
+      for (const start of starts) {
+        const nexts = algorithmA(start);
+        if (nexts.length > 0) {
+          valids = [...valids, ...nexts];
+        } else {
+          invalids.push(start);
         }
-        setBoard(valids[valids.length - 1].board);
-      } else {
-        addInvalidStep(possible);
       }
+
+      const bs = valids.length > 0 ? valids[0] : invalids[0];
+      setBoard(bs.board);
+
+      const s = valids.filter((v) => isBoardSolved(v.board));
+      const p = valids.filter((v) => !isBoardSolved(v.board));
+      const de = [...deadEnds, ...invalids];
+      setSolutions((sols) => [...sols, ...s]);
+      setDeadEnds(de);
+      const su = getUniqueSteps(s);
+      const deu = getUniqueSteps(de);
+      const pu = getUniqueSteps(p);
+      setPossibles(pu);
+      setUniqueSolutions(su.length);
+      setUniqueDeadEnds(deu.length);
+
+      if (s.length) {
+        log('    SOL:', s.length, ' uni:', su.length);
+        log('    DE:', de.length, ' uni:', deu.length);
+      } else {
+        log('    P:', p.length, ' uni:', pu.length);
+        log('    DE:', de.length, ' uni:', deu.length);
+      }
+      setSteps([1]);
     }
+  }
+
+  function getUniqueSteps(steps) {
+    return steps.reduce((uniques, step) => {
+      const match = uniques.some((unique) => boardsMatch(unique.board, step.board));
+      if (match) {
+        return uniques;
+      }
+      return [...uniques, step];
+    }, []);
   }
 
   function algorithmA(possible) {
@@ -293,9 +329,9 @@ function Solver({ levels, saveLevel, close }) {
           <button onClick={next}>Next</button>
         </div>
         <div>
-          <span>{`${deadDuplicates} Dead Duplicates`}</span>
-          <span>{` ${duplicates} Duplicates`}</span>
-          <span>{` ${steps.length} Steps`}</span>
+          <span>{`${uniqueDeadEnds} Unique DEs`}</span>
+          <span>{` ${uniqueSolutions} Unique Sol`}</span>
+          {/*<span>{` ${steps.length} Steps`}</span>*/}
         </div>
         <div className={styles.buttonRow}>
           <button onClick={stepA}>Step A</button>
