@@ -5,9 +5,9 @@ import styles from '../styles/StepsModal.module.css';
 
 function StepsModal({ steps, close }) {
   function buildBoards() {
-    return steps.map((step) => (
+    return steps.map((step, index) => (
       <Board
-        key={`${step.board}`}
+        key={`${index}${step.board}`}
         board={step.board}
       />
     ));
@@ -17,7 +17,9 @@ function StepsModal({ steps, close }) {
     <div className={styles.main}>
       <div className={styles.modal}>
         <div className={styles.content}>
-          {buildBoards()}
+          <div className={styles.boards}>
+            {buildBoards()}
+          </div>
           <div className={styles.buttonRow}>
             <button onClick={close}>Close</button>
           </div>

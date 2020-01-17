@@ -7,15 +7,14 @@ import {
   pieceMax,
   oriMax,
   getBlankBoard,
-  verifyBoard,
   isBoardSolved,
+  boardsMatch0,
   getBoardUnused,
   pickFirstBlankSpot,
   canPlacePiece,
   placePiece,
   verifyPiece,
   verifyOri,
-  getSpotXY,
 } from '../utilities/game';
 import styles from '../styles/Solver.module.css';
 
@@ -35,6 +34,8 @@ function Solver({ levels, saveLevel, close }) {
   const [possibles, setPossibles] = useState([]);
   const [deadEnds, setDeadEnds] = useState([]);
   const [solutions, setSolutions] = useState([]);
+  const [duplicates, setDuplicates] = useState(0);
+  const [deadDuplicates, setDeadDuplicates] = useState(0);
   const [modalSteps, setModalSteps] = useState([]);
   const [logged, setLogged] = useState('');
 
@@ -64,14 +65,20 @@ function Solver({ levels, saveLevel, close }) {
     setBoard(getBlankBoard());
   }
 
-  function reset() {
+  function next() {
     const firstUnsolved = levels.findIndex((level) => !level.end) || 0;
     setLevel(firstUnsolved);
-    setBoard(levels[firstUnsolved].start);
+    reset(firstUnsolved);
+  }
+
+  function reset(index) {
+    setBoard(levels[index].start);
     setSteps([]);
     setPossibles([]);
     setDeadEnds([]);
     setSolutions([]);
+    setDuplicates(0);
+    setDeadDuplicates(0);
     setLogged('');
   }
 
@@ -83,18 +90,32 @@ function Solver({ levels, saveLevel, close }) {
     };
   }
 
-  function addFirstStep() {
-    if (verifyBoard(board)) {
-      const step = createStep(board, null);
-      addStep(step);
-      setPossibles([step]);
-      setDeadEnds([]);
-      setSolutions([]);
+  function addValidStep(step) {
+    setSteps((steps) => [...steps, step]);
+    if (isBoardSolved(step.board)) {
+      setSolutions((steps) => {
+        const found = steps.find((s) => boardsMatch0(s.board, step.board));
+        if (!found) {
+          log('  SOLVED');
+          return [...steps, step];
+        }
+        setDuplicates((d) => d + 1);
+        return steps;
+      });
+    } else {
+      setPossibles((steps) => [...steps, step]);
     }
   }
 
-  function addStep(step) {
-    setSteps((steps) => [...steps, step]);
+  function addInvalidStep(step) {
+    setDeadEnds((steps) => {
+      const found = steps.find((s) => boardsMatch0(s.board, step.board));
+      if (!found) {
+        return [...steps, step];
+      }
+      setDeadDuplicates((d) => d + 1);
+      return steps;
+    });
   }
 
   function handleKeyDown(e) {
@@ -153,61 +174,50 @@ function Solver({ levels, saveLevel, close }) {
     }
   }
 
+  function solveA() {
+  }
+
   function stepA() {
     if (steps.length === 0) {
-      log('FIRST');
-      addFirstStep();
+      log('FIRST', getBoardUnused(board));
+      addValidStep(createStep(board, null));
       return;
     }
 
     const possible = possibles.shift();
-    if (!possible) {
-      return;
-    }
-
-    const board = possible.board;
-    const unused = getBoardUnused(board);
-    const usedSpots = [];
-    let next;
-
-    log('STEP', unused);
-    let piece = unused.shift();
-    let spot = pickFirstBlankSpot(board, usedSpots);
-
-    while (spot >= 0 && !next) {
-      log(`  try ${piece} at ${getSpotXY(spot)} (${spot})`);
-      const oris = pieces[piece].orientations;
-
-      for (let i = 0; i < oris.length && !next; i++) {
-        const ori = oris[i];
-        if (canPlacePiece(piece, ori, spot, board)) {
-          log(`    place ori ${ori}`);
-          next = createStep(placePiece(piece, ori, spot, board), possible);
-          setBoard(next.board);
+    if (possible) {
+      const valids = algorithmA(possible);
+      if (valids.length > 0) {
+        for (const valid of valids) {
+          addValidStep(valid);
         }
-      }
-
-      if (next) {
-        addStep(next);
-        if (isBoardSolved(next.board)) {
-          setSolutions((s) => [...s, next]);
-          log('SOLVED');
-        } else {
-          setPossibles((p) => [...p, next]);
-        }
+        setBoard(valids[valids.length - 1].board);
       } else {
-        usedSpots.push(spot);
-        spot = pickFirstBlankSpot(board, usedSpots);
-
-        if (spot < 0) {
-          log('!!NO-SPOTS!!');
-          //??? if no spots, get next piece
-          //??? if no next piece, add to deadEnds
-          //setDeadEnds([]);
-          return;
-        }
+        addInvalidStep(possible);
       }
     }
+  }
+
+  function algorithmA(possible) {
+    const piece = getBoardUnused(possible.board).shift();
+    const usedSpots = [];
+    let spot = pickFirstBlankSpot(possible.board, usedSpots);
+    const valids = [];
+
+    while (spot >= 0) {
+      const oris = pieces[piece].orientations;
+      for (const ori of oris) {
+        if (canPlacePiece(piece, ori, spot, possible.board)) {
+          const newBoard = placePiece(piece, ori, spot, possible.board);
+          valids.push(createStep(newBoard, possible));
+        }
+      }
+
+      usedSpots.push(spot);
+      spot = pickFirstBlankSpot(possible.board, usedSpots);
+    }
+
+    return valids;
   }
 
   function buildStepsLink(steps, label) {
@@ -279,10 +289,17 @@ function Solver({ levels, saveLevel, close }) {
           {buildStepsLink(deadEnds, 'Dead Ends')}
           {buildStepsLink(solutions, 'Solutions')}
           <button onClick={saveSolution} disabled={solutions.length === 0}>Save</button>
-          <button onClick={reset}>Reset</button>
+          <button onClick={() => reset(level)}>Reset</button>
+          <button onClick={next}>Next</button>
+        </div>
+        <div>
+          <span>{`${deadDuplicates} Dead Duplicates`}</span>
+          <span>{` ${duplicates} Duplicates`}</span>
+          <span>{` ${steps.length} Steps`}</span>
         </div>
         <div className={styles.buttonRow}>
           <button onClick={stepA}>Step A</button>
+          <button onClick={solveA}>Solve A</button>
         </div>
         <div className={styles.log} onDoubleClick={() => setLogged('')}>
           {logged}
