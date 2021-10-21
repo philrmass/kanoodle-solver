@@ -10,4 +10,4 @@ It is deployed at [https://philrmass.github.io/kanoodle-solver/](https://philrma
 - `cd kanoodle-solver`
 - `npm install`
 - `npm start`
-- Open a browser to `localhost:3000`
+- Open a browser to `localhost:8080`
