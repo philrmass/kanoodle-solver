@@ -21,11 +21,10 @@ import styles from '../styles/Solver.module.css';
 function Solver({ levels, saveLevel, close }) {
   const levelMax = levels.length - 1;
   const keyCapture = useRef(null);
-  const firstUnsolved = levels.findIndex((level) => !level.end);
   const solvedCount = levels.reduce((cnt, l) => l.end ? cnt + 1 : cnt, 0);
   const unsolvedCount = levels.reduce((cnt, l) => l.end ? cnt : cnt + 1, 0);
 
-  const [level, setLevel] = useState(0);//firstUnsolved || 0);
+  const [level, setLevel] = useState(0);
   const [piece, setPiece] = useState(0);
   const [ori, setOri] = useState(0);
   const [spot, setSpot] = useState(null);
@@ -90,6 +89,7 @@ function Solver({ levels, saveLevel, close }) {
     };
   }
 
+  /*
   function addValidStep(step) {
     setSteps((steps) => [...steps, step]);
     if (isBoardSolved(step.board)) {
@@ -117,6 +117,7 @@ function Solver({ levels, saveLevel, close }) {
       return steps;
     });
   }
+  */
 
   function handleKeyDown(e) {
     const left = 37;
