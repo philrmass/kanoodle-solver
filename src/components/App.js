@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import { useState } from 'preact/hooks';
 import Board from './Board';
 import Header from './Header';
 import Importer from './Importer';
@@ -56,7 +56,7 @@ function App() {
           />
         }
         { display === null &&
-          <Fragment>
+          <>
             <div className={styles.buttons}>
               <button onClick={() => setDisplay('solver')}>Solve</button>
               <button onClick={() => setDisplay('importer')}>Import</button>
@@ -65,7 +65,7 @@ function App() {
             <Board
               board={board}
             />
-          </Fragment>
+          </>
         }
       </main>
     </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'preact/hooks';
 import PropTypes from 'prop-types';
 import { rgbToHex } from '../utilities/color';
 import styles from '../styles/ColorsDisplay.module.css';
@@ -23,7 +23,7 @@ function ColorsDisplay({ colors, size, width }) {
       const colorStyle = { background };
       return (
         <div
-          key={index} // eslint-disable-line react/no-array-index-key
+          key={index} // eslint-disable-line
           id={`yo${index}`}
           className={styles.color}
           style={colorStyle}

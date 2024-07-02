@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'preact/hooks';
 import PropTypes from 'prop-types';
 import styles from '../styles/Board.module.css';
 import pieces from '../data/pieces.json';

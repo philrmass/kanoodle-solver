@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import PropTypes from 'prop-types';
 import pieces from '../data/pieces.json';
 import Board from './Board';
@@ -278,7 +278,7 @@ function Solver({ levels, saveLevel, close }) {
   }
 
   return (
-    <Fragment>
+    <>
       <section
         tabIndex={0}
         ref={keyCapture}
@@ -343,7 +343,7 @@ function Solver({ levels, saveLevel, close }) {
         </div>
       </section>
       {buildStepsModal()}
-    </Fragment>
+    </>
   );
 }
 

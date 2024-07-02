@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import Board from './Board';
 import styles from '../styles/StepsModal.module.css';

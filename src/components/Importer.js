@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import PropTypes from 'prop-types';
 import { calcAverage, calcHueDiff, hexToColor, rgbToColor } from '../utilities/color';
 import pieces from '../data/pieces.json';
@@ -362,7 +362,7 @@ function Importer({ levels, saveLevel, close }) {
   const dropClasses = `${styles.dropMessage} ${hasDrop ? 'active' : ''}`;
 
   return (
-    <Fragment>
+    <>
       <div
         tabIndex={0}
         ref={keyCapture}
@@ -417,7 +417,7 @@ function Importer({ levels, saveLevel, close }) {
           />
         </div>
       </div>
-    </Fragment>
+    </>
   );
 }
 
